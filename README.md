@@ -9,6 +9,7 @@ Command-line tool for bootstrapping and updating ClaudeKit projects.
 ClaudeKit CLI (`ck`) is a command-line tool for bootstrapping and updating projects from private GitHub releases. Built with Bun and TypeScript, provides fast, secure project setup and maintenance.
 
 **Key Features:**
+
 - Multi-tier GitHub authentication (gh CLI → env vars → keychain → prompt)
 - Streaming downloads with progress tracking and platform optimizations
 - Smart file merging with conflict detection
@@ -103,6 +104,7 @@ ck new --prefix
 ```
 
 **Flags:**
+
 - `--install-skills`: Auto-install Python packages, system tools (FFmpeg, ImageMagick), Node.js packages
 - `--prefix`: Move commands to /ck: namespace (/plan → /ck:plan)
 - `--beta`: Show pre-release versions in selection
@@ -137,6 +139,7 @@ ck init --exclude "*.local" --prefix
 ```
 
 **Flags:**
+
 - `--yes/-y`: Non-interactive mode with sensible defaults (skip all prompts)
 - `--global/-g`: Use platform-specific config (macOS/Linux: ~/.claude, Windows: %USERPROFILE%\.claude)
 - `--fresh`: Clean reinstall, removes .claude directory (requires "yes" confirmation)
@@ -145,13 +148,13 @@ ck init --exclude "*.local" --prefix
 
 **Default Behavior with `-y` Flag:**
 
-| Prompt | Default |
-|--------|---------|
-| Select ClaudeKit | engineer (first option) |
-| Target directory | Current directory (`.`) |
-| Version selection | Latest stable release |
-| Google Gemini setup | Skip |
-| Other optional features | Skip |
+| Prompt                  | Default                 |
+| ----------------------- | ----------------------- |
+| Select ClaudeKit        | engineer (first option) |
+| Target directory        | Current directory (`.`) |
+| Version selection       | Latest stable release   |
+| Google Gemini setup     | Skip                    |
+| Other optional features | Skip                    |
 
 ### Update CLI
 
@@ -175,6 +178,7 @@ ck update --yes
 The CLI notifies you when updates are available via `ck --version`.
 
 **Skills Migration:**
+
 - Auto-detects structure changes (flat → categorized)
 - Preserves customizations (SHA-256 hashing)
 - Creates backup before migration
@@ -220,6 +224,7 @@ ck doctor --check-only --json
 ```
 
 **Health Checks:**
+
 - **System**: Node.js, npm, Python, pip, Claude CLI, git, gh CLI
 - **ClaudeKit**: Global/project installation, versions, skills
 - **Auth**: GitHub CLI authentication, repository access
@@ -236,6 +241,7 @@ ck doctor --check-only --json
 | Missing skill deps | Install in skill directory |
 
 **Exit Codes:**
+
 - `0`: All checks pass or issues fixed
 - `1`: Failures detected (only with `--check-only`)
 
@@ -255,6 +261,7 @@ ck uninstall --yes        # Non-interactive - skip confirmation (for scripts)
 ```
 
 **Scope Selection:**
+
 - When both local and global installations exist, you'll be prompted to choose:
   - **Local only**: Remove from current project (`.claude/`)
   - **Global only**: Remove from user directory (`~/.claude/`)
@@ -262,6 +269,7 @@ ck uninstall --yes        # Non-interactive - skip confirmation (for scripts)
 - Use `--local` or `--global` flags to skip the prompt
 
 **What it does:**
+
 - Detects local `.claude` directory in current project
 - Detects global `~/.claude` ClaudeKit installation
 - Shows paths before deletion
@@ -315,6 +323,7 @@ export CK_CACHE_TTL=1800         # 30 minutes
 The `ck --version` command checks for newer versions of your installed ClaudeKit and displays a notification if an update is available. The check is cached for 7 days to minimize API calls.
 
 **Disable Update Notifications:**
+
 ```bash
 # Set environment variable to disable
 NO_UPDATE_NOTIFIER=1 ck --version
@@ -353,6 +362,7 @@ The CLI requires GitHub authentication to download releases from private reposit
 ### Quick Setup
 
 **Step 1: Install GitHub CLI**
+
 ```bash
 # Windows
 winget install GitHub.cli
@@ -365,11 +375,13 @@ sudo apt install gh
 ```
 
 **Step 2: Authenticate with GitHub CLI**
+
 ```bash
 gh auth login
 ```
 
 When prompted, follow these steps:
+
 1. Select **GitHub.com**
 2. Select **HTTPS** (or SSH if preferred)
 3. Authenticate Git? → **Yes**
@@ -400,6 +412,7 @@ ck init --verbose
 ```
 
 **Common Issues:**
+
 - **"Access denied"**: Run `ck doctor` to check auth, use `--fix` to auto-repair
 - **"Authentication failed"**: Run `ck doctor --fix` to re-authenticate, or manually run `gh auth login` (select 'Login with a web browser')
 - **"GitHub CLI not authenticated"**: Run `gh auth login` and select 'Login with a web browser' (NOT 'Paste token')
@@ -473,6 +486,7 @@ Automatic migration when structure changes (flat → categorized):
 - **Interactive**: Prompts for confirmation (can skip in CI/CD)
 
 **Example Migration:**
+
 ```
 Before (flat):
   .claude/skills/
@@ -495,18 +509,21 @@ Customizations in any skill are detected and preserved automatically.
 ## Development
 
 See [Development Guide](./docs/codebase-summary.md) for:
+
 - Project structure (modular domain-driven architecture)
 - Build & compilation (`bun run build`, `bun run compile`)
 - Testing & type checking
 - Code standards & linting
 
 **Architecture Highlights:**
+
 - **Modular design**: 122 focused modules (target: <100 lines each)
 - **Facade pattern**: Each domain exposes public API via facade
 - **Phase handlers**: Complex commands use orchestrator + phase handlers
 - **Self-documenting names**: kebab-case file names describe purpose
 
 **Quick Start:**
+
 ```bash
 bun install
 bun run dev new --kit engineer

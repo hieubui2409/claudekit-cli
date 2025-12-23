@@ -11,12 +11,12 @@ As of v1.4.0, `claudekit-cli` is distributed as pre-compiled platform-specific b
 
 ## Supported Platforms
 
-| Platform | Architecture | Binary Name |
-|----------|-------------|-------------|
-| macOS | ARM64 (Apple Silicon) | `ck-darwin-arm64` |
-| macOS | x64 (Intel) | `ck-darwin-x64` |
-| Linux | x64 | `ck-linux-x64` |
-| Windows | x64 | `ck-win32-x64.exe` |
+| Platform | Architecture          | Binary Name        |
+| -------- | --------------------- | ------------------ |
+| macOS    | ARM64 (Apple Silicon) | `ck-darwin-arm64`  |
+| macOS    | x64 (Intel)           | `ck-darwin-x64`    |
+| Linux    | x64                   | `ck-linux-x64`     |
+| Windows  | x64                   | `ck-win32-x64.exe` |
 
 ## How It Works
 
@@ -92,6 +92,7 @@ chmod +x ~/.npm/_npx/*/bin/ck
 If you still see character encoding issues:
 
 1. Verify you're using the binary (not JavaScript source):
+
    ```bash
    which ck
    file $(which ck)  # Should show "Mach-O" or "ELF executable"

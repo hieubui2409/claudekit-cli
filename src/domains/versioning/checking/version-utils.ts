@@ -4,10 +4,10 @@
 import { compareVersions } from "compare-versions";
 
 export interface VersionCheckResult {
-	currentVersion: string;
-	latestVersion: string;
-	updateAvailable: boolean;
-	releaseUrl: string;
+  currentVersion: string;
+  latestVersion: string;
+  updateAvailable: boolean;
+  releaseUrl: string;
 }
 
 /**
@@ -16,11 +16,11 @@ export interface VersionCheckResult {
  * @internal Exported for testing
  */
 export function isUpdateCheckDisabled(): boolean {
-	return (
-		process.env.NO_UPDATE_NOTIFIER === "1" ||
-		process.env.NO_UPDATE_NOTIFIER === "true" ||
-		!process.stdout.isTTY // Not a terminal (CI/CD)
-	);
+  return (
+    process.env.NO_UPDATE_NOTIFIER === "1" ||
+    process.env.NO_UPDATE_NOTIFIER === "true" ||
+    !process.stdout.isTTY // Not a terminal (CI/CD)
+  );
 }
 
 /**
@@ -29,7 +29,7 @@ export function isUpdateCheckDisabled(): boolean {
  * @internal Exported for testing
  */
 export function normalizeVersion(version: string): string {
-	return version.replace(/^v/, "");
+  return version.replace(/^v/, "");
 }
 
 /**
@@ -37,12 +37,15 @@ export function normalizeVersion(version: string): string {
  * Returns: true if latestVersion > currentVersion
  * @internal Exported for testing
  */
-export function isNewerVersion(currentVersion: string, latestVersion: string): boolean {
-	try {
-		const current = normalizeVersion(currentVersion);
-		const latest = normalizeVersion(latestVersion);
-		return compareVersions(latest, current) > 0;
-	} catch {
-		return false;
-	}
+export function isNewerVersion(
+  currentVersion: string,
+  latestVersion: string,
+): boolean {
+  try {
+    const current = normalizeVersion(currentVersion);
+    const latest = normalizeVersion(latestVersion);
+    return compareVersions(latest, current) > 0;
+  } catch {
+    return false;
+  }
 }

@@ -58,6 +58,7 @@ The `ck doctor` command is **largely complete** and functional. Current implemen
 #### 2. **Claude CLI Installation URLs (Verified but Could Be Enhanced)**
 
 **Current**: Uses placeholder URLs that may not match official docs
+
 - macOS: `brew install --cask claude-code` ✅ (correct)
 - Linux: `curl -fsSL https://claude.ai/install.sh | bash` ✅ (correct)
 - Windows: `powershell -Command "irm https://claude.ai/install.ps1 | iex"` ✅ (correct)
@@ -68,20 +69,24 @@ The `ck doctor` command is **largely complete** and functional. Current implemen
 #### 3. **Error Handling Edge Cases**
 
 **Partial installations**: pip missing but Python installed
+
 - Current: checkDependency tries both pip3/pip, returns not found if neither exists
 - Gap: No specific messaging about installing pip separately
 
 **Network failures**: Installation script download fails
+
 - Current: Generic error message from execAsync
 - Gap: No specific network error detection/retry logic
 
 **Permission issues**: Sudo required but not available
+
 - Current: Generic error message
 - Gap: No specific permission error detection
 
 #### 4. **Documentation Gaps**
 
 **Missing**:
+
 - Troubleshooting guide for common doctor failures
 - Platform-specific notes (WSL, M1 Macs)
 - Expected output examples
@@ -98,6 +103,7 @@ The `ck doctor` command is **largely complete** and functional. Current implemen
 **Changes**:
 
 1. Update `detectOS()` in `dependency-installer.ts`:
+
    ```typescript
    export interface OSInfo {
      platform: "darwin" | "linux" | "win32";
@@ -106,12 +112,13 @@ The `ck doctor` command is **largely complete** and functional. Current implemen
      hasApt?: boolean;
      hasDnf?: boolean;
      hasPacman?: boolean;
-     hasWinget?: boolean;      // Add
-     hasChocolatey?: boolean;  // Add
+     hasWinget?: boolean; // Add
+     hasChocolatey?: boolean; // Add
    }
    ```
 
 2. Add detection logic:
+
    ```typescript
    if (platform === "win32") {
      // Check for winget
@@ -133,6 +140,7 @@ The `ck doctor` command is **largely complete** and functional. Current implemen
    ```
 
 3. Add Windows installation methods:
+
    ```typescript
    // For Claude CLI
    {
@@ -209,14 +217,17 @@ The `ck doctor` command is **largely complete** and functional. Current implemen
 **Changes**:
 
 1. Network error detection in `installDependency()`:
+
    ```typescript
    try {
      await execAsync(selectedMethod.command);
    } catch (error) {
      // Detect network errors
-     if (error.message.includes("getaddrinfo") ||
-         error.message.includes("ENOTFOUND") ||
-         error.message.includes("ETIMEDOUT")) {
+     if (
+       error.message.includes("getaddrinfo") ||
+       error.message.includes("ENOTFOUND") ||
+       error.message.includes("ETIMEDOUT")
+     ) {
        return {
          success: false,
          message: `Network error: Unable to download ${dependency}. Check internet connection.`,
@@ -224,11 +235,13 @@ The `ck doctor` command is **largely complete** and functional. Current implemen
      }
 
      // Detect permission errors
-     if (error.message.includes("EACCES") ||
-         error.message.includes("permission denied")) {
+     if (
+       error.message.includes("EACCES") ||
+       error.message.includes("permission denied")
+     ) {
        return {
          success: false,
-         message: `Permission denied. Try running with ${selectedMethod.requiresSudo ? 'administrator/sudo' : 'elevated'} privileges.`,
+         message: `Permission denied. Try running with ${selectedMethod.requiresSudo ? "administrator/sudo" : "elevated"} privileges.`,
        };
      }
 
@@ -237,10 +250,13 @@ The `ck doctor` command is **largely complete** and functional. Current implemen
    ```
 
 2. Partial installation detection in `doctorCommand()`:
+
    ```typescript
    // After checking dependencies
-   const pythonInstalled = dependencies.find(d => d.name === 'python')?.installed;
-   const pipInstalled = dependencies.find(d => d.name === 'pip')?.installed;
+   const pythonInstalled = dependencies.find(
+     (d) => d.name === "python",
+   )?.installed;
+   const pipInstalled = dependencies.find((d) => d.name === "pip")?.installed;
 
    if (pythonInstalled && !pipInstalled) {
      logger.warning("⚠️  Python is installed but pip is missing");
@@ -248,8 +264,10 @@ The `ck doctor` command is **largely complete** and functional. Current implemen
      logger.info("");
    }
 
-   const nodeInstalled = dependencies.find(d => d.name === 'nodejs')?.installed;
-   const npmInstalled = dependencies.find(d => d.name === 'npm')?.installed;
+   const nodeInstalled = dependencies.find(
+     (d) => d.name === "nodejs",
+   )?.installed;
+   const npmInstalled = dependencies.find((d) => d.name === "npm")?.installed;
 
    if (nodeInstalled && !npmInstalled) {
      logger.warning("⚠️  Node.js is installed but npm is missing");
@@ -270,6 +288,7 @@ The `ck doctor` command is **largely complete** and functional. Current implemen
 **Changes**:
 
 1. Add to `CLAUDE_INSTALLERS`:
+
    ```typescript
    {
      name: "npm (Global)",
@@ -308,6 +327,7 @@ The `ck doctor` command is **largely complete** and functional. Current implemen
 **Create**: `docs/troubleshooting-doctor.md`
 
 **Contents**:
+
 ```markdown
 # Troubleshooting `ck doctor`
 
@@ -318,12 +338,14 @@ The `ck doctor` command is **largely complete** and functional. Current implemen
 **Symptom**: `❌ Claude - Status: Not installed`
 
 **Solutions**:
+
 1. Install via Homebrew (macOS): `brew install --cask claude-code`
 2. Install via curl (Linux): `curl -fsSL https://claude.ai/install.sh | bash`
 3. Install via PowerShell (Windows): `irm https://claude.ai/install.ps1 | iex`
 4. Install via npm (all platforms): `npm install -g @anthropic-ai/claude-code`
 
 **Notes**:
+
 - Requires OAuth authentication after installation
 - Check PATH: `echo $PATH` (macOS/Linux) or `$env:PATH` (Windows)
 - Restart terminal after installation
@@ -333,6 +355,7 @@ The `ck doctor` command is **largely complete** and functional. Current implemen
 **Symptom**: `✅ Python` but `❌ Pip - Status: Not installed`
 
 **Solutions**:
+
 1. Install pip: `python -m ensurepip --upgrade`
 2. Or use system package manager:
    - Ubuntu/Debian: `sudo apt install python3-pip`
@@ -343,6 +366,7 @@ The `ck doctor` command is **largely complete** and functional. Current implemen
 **Symptom**: `Permission denied` or `EACCES` errors
 
 **Solutions**:
+
 1. Run with sudo (Linux/macOS): `sudo <command>`
 2. Run as administrator (Windows): Open PowerShell/CMD as admin
 3. Use user-local installation:
@@ -354,6 +378,7 @@ The `ck doctor` command is **largely complete** and functional. Current implemen
 **Symptom**: `ENOTFOUND`, `ETIMEDOUT`, or connection errors
 
 **Solutions**:
+
 1. Check internet connection
 2. Check firewall/proxy settings
 3. Try alternative installation method (npm vs curl)
@@ -364,6 +389,7 @@ The `ck doctor` command is **largely complete** and functional. Current implemen
 **Symptom**: Windows Subsystem for Linux (WSL) not detecting dependencies
 
 **Solutions**:
+
 1. Install dependencies in WSL environment, not Windows
 2. Use Linux installation methods (apt, curl)
 3. Ensure WSL PATH includes installation directories
@@ -374,6 +400,7 @@ The `ck doctor` command is **largely complete** and functional. Current implemen
 **Symptom**: Architecture mismatch or Rosetta errors
 
 **Solutions**:
+
 1. Use Homebrew arm64 version: `/opt/homebrew/bin/brew`
 2. Reinstall with correct architecture
 3. Check installed architecture: `file $(which python3)`
@@ -381,17 +408,20 @@ The `ck doctor` command is **largely complete** and functional. Current implemen
 ## Platform-Specific Notes
 
 ### macOS
+
 - Homebrew recommended for all dependencies
 - May need Xcode Command Line Tools: `xcode-select --install`
 - M1/M2: Use native arm64 versions when available
 
 ### Linux
+
 - Ubuntu/Debian: Use apt
 - Fedora/RHEL: Use dnf
 - Arch: Use pacman
 - WSL: Follow Linux instructions, not Windows
 
 ### Windows
+
 - PowerShell recommended (run as administrator if needed)
 - Git Bash/WSL: Follow Linux instructions
 - PATH may need manual update after installation
@@ -401,6 +431,7 @@ The `ck doctor` command is **largely complete** and functional. Current implemen
 
 Successful run shows:
 ```
+
 🩺 ClaudeKit Setup Overview
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -408,23 +439,24 @@ System Dependencies
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ✅ Claude
-   Version: 2.0.42
-   Location: /usr/local/bin/claude
+Version: 2.0.42
+Location: /usr/local/bin/claude
 
 ✅ Python
-   Version: 3.11.0
-   Location: /usr/bin/python3
+Version: 3.11.0
+Location: /usr/bin/python3
 
 ✅ Pip
-   Location: /usr/bin/pip3
+Location: /usr/bin/pip3
 
 ✅ Nodejs
-   Version: 20.0.0
-   Location: /usr/bin/node
+Version: 20.0.0
+Location: /usr/bin/node
 
 ✅ Npm
-   Version: 10.0.0
-   Location: /usr/bin/npm
+Version: 10.0.0
+Location: /usr/bin/npm
+
 ```
 
 ## FAQ
@@ -454,6 +486,7 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
 **New tests needed**:
 
 1. Windows package manager detection:
+
    ```typescript
    test("should detect winget on Windows", async () => {
      // Mock winget command
@@ -466,6 +499,7 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
    ```
 
 2. Error handling:
+
    ```typescript
    test("should detect network errors", async () => {
      // Mock network failure
@@ -495,11 +529,13 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
 ### Integration Tests
 
 **Existing tests**: ✅ Passing
+
 - `tests/commands/doctor.test.ts`: 8 tests passing
 - `tests/utils/dependency-checker.test.ts`: 21 tests passing
 - `tests/utils/dependency-installer.test.ts`: 18 tests passing
 
 **New tests needed**:
+
 - Windows package manager installation flow
 - Error message formatting
 - Manual instruction output validation
@@ -507,6 +543,7 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
 ### Manual Testing Checklist
 
 **Pre-release testing**:
+
 - [ ] Test on macOS (Intel + Apple Silicon)
 - [ ] Test on Linux (Ubuntu, Fedora, Arch)
 - [ ] Test on Windows (PowerShell, CMD, Git Bash, WSL)
@@ -580,6 +617,7 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
 ### Phase 1: High-Priority Improvements (Week 1)
 
 **Day 1-2**: Windows Package Manager Support
+
 - Update OSInfo interface
 - Add winget/chocolatey detection
 - Add Windows installation methods
@@ -587,17 +625,20 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
 - Write unit tests
 
 **Day 3**: Enhanced Error Handling
+
 - Network error detection
 - Permission error detection
 - Partial installation warnings
 - Test error scenarios
 
 **Day 4**: NPM Installation Method
+
 - Add NPM installers for all platforms
 - Update manual instructions
 - Quick testing
 
 **Day 5**: Testing & QA
+
 - Run full test suite
 - Manual testing on all platforms
 - Fix bugs found during testing
@@ -605,17 +646,20 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
 ### Phase 2: Documentation (Week 2)
 
 **Day 1-2**: Create Troubleshooting Guide
+
 - Write troubleshooting-doctor.md
 - Add platform-specific notes
 - Create FAQ section
 - Add expected output examples
 
 **Day 3**: Update Existing Docs
+
 - Update README.md with doctor command details
 - Update code-standards.md if needed
 - Add doctor to deployment guide
 
 **Day 4-5**: Review & Refinement
+
 - Internal review
 - User testing feedback
 - Final polish
@@ -631,6 +675,7 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
 **Steps**:
 
 1. Update `OSInfo` interface (line 13):
+
    ```typescript
    export interface OSInfo {
      platform: "darwin" | "linux" | "win32";
@@ -639,12 +684,13 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
      hasApt?: boolean;
      hasDnf?: boolean;
      hasPacman?: boolean;
-     hasWinget?: boolean;      // ADD
-     hasChocolatey?: boolean;  // ADD
+     hasWinget?: boolean; // ADD
+     hasChocolatey?: boolean; // ADD
    }
    ```
 
 2. Update `detectOS()` function (after line 70):
+
    ```typescript
    } else if (platform === "win32") {
      // Check for winget
@@ -666,6 +712,7 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
    ```
 
 3. Add Windows installers to `CLAUDE_INSTALLERS` (after line 102):
+
    ```typescript
    {
      name: "winget (Windows)",
@@ -686,6 +733,7 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
    ```
 
 4. Add Windows installers to `PYTHON_INSTALLERS` (after line 140):
+
    ```typescript
    {
      name: "winget (Windows)",
@@ -706,6 +754,7 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
    ```
 
 5. Add Windows installers to `NODEJS_INSTALLERS` (after line 179):
+
    ```typescript
    {
      name: "winget (Windows)",
@@ -726,6 +775,7 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
    ```
 
 6. Update `getInstallerMethods()` filter logic (after line 222):
+
    ```typescript
    } else if (osInfo.platform === "win32") {
      if (!osInfo.hasWinget) {
@@ -738,6 +788,7 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
    ```
 
 7. Update `getManualInstructions()` Windows sections (lines 306, 327, 342):
+
    ```typescript
    // For Claude CLI
    } else if (osInfo.platform === "win32") {
@@ -779,6 +830,7 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
    ```
 
 **Testing**:
+
 - Run on Windows with winget installed
 - Run on Windows with chocolatey installed
 - Run on Windows with neither installed
@@ -793,6 +845,7 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
 **Steps**:
 
 1. Update `installDependency()` error handling (line 256-260):
+
    ```typescript
    try {
      await execAsync(selectedMethod.command);
@@ -800,22 +853,30 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
      const errorMsg = error instanceof Error ? error.message : String(error);
 
      // Detect network errors
-     if (errorMsg.includes("getaddrinfo") ||
-         errorMsg.includes("ENOTFOUND") ||
-         errorMsg.includes("ETIMEDOUT") ||
-         errorMsg.includes("network") ||
-         errorMsg.includes("connection")) {
-       throw new Error(`Network error: Unable to download ${dependency}. Please check your internet connection and try again.`);
+     if (
+       errorMsg.includes("getaddrinfo") ||
+       errorMsg.includes("ENOTFOUND") ||
+       errorMsg.includes("ETIMEDOUT") ||
+       errorMsg.includes("network") ||
+       errorMsg.includes("connection")
+     ) {
+       throw new Error(
+         `Network error: Unable to download ${dependency}. Please check your internet connection and try again.`,
+       );
      }
 
      // Detect permission errors
-     if (errorMsg.includes("EACCES") ||
-         errorMsg.includes("permission denied") ||
-         errorMsg.includes("Access is denied")) {
+     if (
+       errorMsg.includes("EACCES") ||
+       errorMsg.includes("permission denied") ||
+       errorMsg.includes("Access is denied")
+     ) {
        const suggestion = selectedMethod.requiresSudo
          ? "Try running with administrator/sudo privileges."
          : "You may need elevated privileges for this installation.";
-       throw new Error(`Permission denied while installing ${dependency}. ${suggestion}`);
+       throw new Error(
+         `Permission denied while installing ${dependency}. ${suggestion}`,
+       );
      }
 
      throw new Error(`Installation command failed: ${errorMsg}`);
@@ -827,14 +888,19 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
 **Steps**:
 
 2. Add partial installation detection (after line 69):
+
    ```typescript
    logger.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
    // Check for partial installations
-   const pythonInstalled = dependencies.find(d => d.name === 'python')?.installed;
-   const pipInstalled = dependencies.find(d => d.name === 'pip')?.installed;
-   const nodeInstalled = dependencies.find(d => d.name === 'nodejs')?.installed;
-   const npmInstalled = dependencies.find(d => d.name === 'npm')?.installed;
+   const pythonInstalled = dependencies.find(
+     (d) => d.name === "python",
+   )?.installed;
+   const pipInstalled = dependencies.find((d) => d.name === "pip")?.installed;
+   const nodeInstalled = dependencies.find(
+     (d) => d.name === "nodejs",
+   )?.installed;
+   const npmInstalled = dependencies.find((d) => d.name === "npm")?.installed;
 
    if (pythonInstalled && !pipInstalled) {
      logger.info("");
@@ -846,11 +912,14 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
    if (nodeInstalled && !npmInstalled) {
      logger.info("");
      logger.warning("⚠️  Node.js is installed but npm is missing");
-     logger.info("   This is unusual. Consider reinstalling Node.js to get npm.");
+     logger.info(
+       "   This is unusual. Consider reinstalling Node.js to get npm.",
+     );
    }
    ```
 
 **Testing**:
+
 - Mock network failures and verify error message
 - Mock permission errors and verify error message
 - Test with Python installed but pip missing
@@ -865,6 +934,7 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
 **Steps**:
 
 1. Add to `CLAUDE_INSTALLERS` (insert after line 102):
+
    ```typescript
    {
      name: "npm (Cross-platform)",
@@ -893,6 +963,7 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
    ```
 
 2. Update manual instructions for Claude (all platforms):
+
    ```typescript
    case "claude":
      instructions.push("Visit https://code.claude.com/docs/en/setup");
@@ -905,6 +976,7 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
    ```
 
 **Testing**:
+
 - Verify npm method appears in installer list
 - Test installation via npm method
 - Check priority ordering
@@ -920,7 +992,8 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
 1. Create file with full content (see Priority 4 section above)
 
 2. Update `README.md` to reference troubleshooting:
-   ```markdown
+
+   ````markdown
    ### Troubleshooting
 
    Run diagnostics to check for common issues:
@@ -930,17 +1003,22 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
    ck doctor                # Check dependencies and setup
    ck new --verbose         # Enable detailed logging
    ```
+   ````
 
    **Common Issues:**
    - **Dependencies missing**: Run `ck doctor` for installation help
    - **"Access denied"**: Accept GitHub repo invitation, verify `repo` scope
-   - **"Authentication failed"**: Check token format (ghp_*), verify env var
+   - **"Authentication failed"**: Check token format (ghp\_\*), verify env var
    - **Token not persisting (Windows)**: Use `SetEnvironmentVariable` or `gh auth login`
 
    For detailed troubleshooting, see [Troubleshooting Guide](./docs/troubleshooting-doctor.md).
+
+   ```
+
    ```
 
 3. Update `docs/codebase-summary.md` to mention doctor command:
+
    ```markdown
    ### Commands
 
@@ -952,6 +1030,7 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
    ```
 
 **Testing**:
+
 - Verify all links work
 - Test instructions on each platform
 - Ensure examples match actual output
@@ -965,6 +1044,7 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
 **Steps**:
 
 1. Add Windows package manager tests (end of file):
+
    ```typescript
    describe("Windows Package Managers", () => {
      test("should detect winget and chocolatey on Windows", async () => {
@@ -979,9 +1059,13 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
      });
 
      test("should include Windows installers for all dependencies", () => {
-       const claudeWin = CLAUDE_INSTALLERS.filter(m => m.platform === "win32");
-       const pythonWin = PYTHON_INSTALLERS.filter(m => m.platform === "win32");
-       const nodeWin = NODEJS_INSTALLERS.filter(m => m.platform === "win32");
+       const claudeWin = CLAUDE_INSTALLERS.filter(
+         (m) => m.platform === "win32",
+       );
+       const pythonWin = PYTHON_INSTALLERS.filter(
+         (m) => m.platform === "win32",
+       );
+       const nodeWin = NODEJS_INSTALLERS.filter((m) => m.platform === "win32");
 
        // Should have at least PowerShell method + potentially winget/choco
        expect(claudeWin.length).toBeGreaterThan(0);
@@ -999,8 +1083,8 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
        const methods = getInstallerMethods("python", osInfoNoPackageManagers);
 
        // Should not include winget/choco methods
-       const hasWinget = methods.some(m => m.command.includes("winget"));
-       const hasChoco = methods.some(m => m.command.includes("choco"));
+       const hasWinget = methods.some((m) => m.command.includes("winget"));
+       const hasChoco = methods.some((m) => m.command.includes("choco"));
 
        expect(hasWinget).toBe(false);
        expect(hasChoco).toBe(false);
@@ -1013,6 +1097,7 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
 **Steps**:
 
 2. Add partial installation tests (end of file):
+
    ```typescript
    describe("Partial installation warnings", () => {
      test("should detect Python without pip scenario", async () => {
@@ -1029,6 +1114,7 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
    ```
 
 **Testing**:
+
 - Run `bun test tests/utils/dependency-installer.test.ts`
 - Run `bun test tests/commands/doctor.test.ts`
 - Verify all tests pass
@@ -1069,17 +1155,21 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
 ## Dependencies & Prerequisites
 
 ### Required Tools
+
 - Bun >=1.3.2 (for development and testing)
 - Node.js >=16.0.0 (for npm method testing)
 - TypeScript >=5.0.0
 
 ### External Services
+
 - None (all changes are local)
 
 ### Breaking Changes
+
 - None (all changes are additive)
 
 ### Migration Required
+
 - None
 
 ---
@@ -1089,20 +1179,24 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
 ### A. Related Files
 
 **Core Implementation**:
+
 - `src/commands/doctor.ts` - Main doctor command
 - `src/utils/dependency-checker.ts` - Dependency detection
 - `src/utils/dependency-installer.ts` - Installation logic
 - `src/utils/claudekit-scanner.ts` - Setup overview
 
 **Tests**:
+
 - `tests/commands/doctor.test.ts`
 - `tests/utils/dependency-checker.test.ts`
 - `tests/utils/dependency-installer.test.ts`
 
 **Types**:
+
 - `src/types.ts` - DependencyConfig, DependencyStatus, etc.
 
 **Documentation**:
+
 - `README.md` - User-facing usage
 - `docs/project-overview-pdr.md` - Requirements
 - `docs/troubleshooting-doctor.md` - (to be created)
@@ -1110,11 +1204,13 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
 ### B. Installation URL References
 
 **Official Documentation**:
+
 - Claude Code: https://code.claude.com/docs/en/setup
 - Python: https://www.python.org/downloads/
 - Node.js: https://nodejs.org/
 
 **Package Repositories**:
+
 - Homebrew: https://formulae.brew.sh/
 - npm: https://www.npmjs.com/package/@anthropic-ai/claude-code
 - winget: https://winget.run/ (search for packages)
@@ -1123,6 +1219,7 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
 ### C. Version History
 
 **v1.0** (2025-11-16): Initial implementation plan
+
 - Current state analysis
 - Identified 4 priority areas
 - Step-by-step implementation tasks
@@ -1136,6 +1233,7 @@ A: Restart terminal or manually add to PATH in shell config (.bashrc, .zshrc, pr
 **Current Status**: `ck doctor` is **largely complete and functional**.
 
 **Recommended Actions**:
+
 1. **Implement Windows package manager support** (1-2 hours, high value)
 2. **Enhance error handling** (1-2 hours, medium value)
 3. **Add NPM installation method** (30 min, low effort)

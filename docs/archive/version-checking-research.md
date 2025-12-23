@@ -7,6 +7,7 @@ Modern CLIs use non-blocking, cached version checks with infrequent polling (wee
 ## 1. User Experience Patterns
 
 ### Notification Display
+
 - **Non-intrusive messaging**: Display update notifications AFTER command completes, not before
 - **Clear actionable info**: Show current version, latest version, and exact upgrade command
 - **Structured output**: Include version type (major/minor/patch), release notes link
@@ -21,6 +22,7 @@ Modern CLIs use non-blocking, cached version checks with infrequent polling (wee
   ```
 
 ### UX Principles [1]
+
 - Box drawing characters for visual distinction
 - Color coding (yellow/green) for visibility
 - Single line command for easy copy-paste
@@ -29,7 +31,9 @@ Modern CLIs use non-blocking, cached version checks with infrequent polling (wee
 ## 2. Rate Limiting & Caching Strategies
 
 ### Caching Implementation [1,2]
+
 **update-notifier approach**:
+
 - Default check interval: **1 week** (configurable)
 - Cache file stored in user's config directory
 - Persists: last check timestamp, latest version, update metadata
@@ -37,6 +41,7 @@ Modern CLIs use non-blocking, cached version checks with infrequent polling (wee
 - Only check npm registry if interval expired
 
 **Cache structure**:
+
 ```json
 {
   "lastUpdateCheck": 1234567890,
@@ -46,6 +51,7 @@ Modern CLIs use non-blocking, cached version checks with infrequent polling (wee
 ```
 
 ### Rate Limiting Best Practices [2]
+
 - **Client-side throttling**: Enforce minimum intervals between checks
 - **Exponential backoff**: Increase interval after failed checks
 - **Graceful degradation**: Skip check on network errors, continue CLI execution
@@ -55,7 +61,9 @@ Modern CLIs use non-blocking, cached version checks with infrequent polling (wee
 ## 3. Non-Blocking Approaches
 
 ### Background Process Pattern [1]
+
 **update-notifier implementation**:
+
 - Spawns unref'ed child process for npm registry check
 - Parent process continues immediately (no await)
 - Child process exits after persisting result
@@ -64,6 +72,7 @@ Modern CLIs use non-blocking, cached version checks with infrequent polling (wee
 **Critical**: Process uses `child_process.unref()` so parent can exit without waiting
 
 ### Performance Impact
+
 - **Startup delay**: ~0-5ms (just loading cached JSON)
 - **Network check**: Happens asynchronously, zero blocking
 - **--version command**: Read local package.json only, never check remote
@@ -73,40 +82,47 @@ Modern CLIs use non-blocking, cached version checks with infrequent polling (wee
 ## 4. Security Considerations
 
 ### Registry Communication [1]
+
 - **HTTPS only**: All npm registry requests use TLS
 - **Package scope verification**: Validate package name matches
 - **Signature validation**: npm packages have integrity checksums
 - **No auto-updates**: Only notify, never auto-download/install
 
 ### Threat Mitigations
+
 - **MITM protection**: TLS + certificate validation
 - **Cache poisoning**: Store in user-writable directory only (not system-wide)
 - **Malicious versions**: Show version number, let user review before upgrade
 - **Supply chain**: Rely on package manager's built-in security (npm audit, etc.)
 
 ### Configuration Exposure
+
 - Allow users to disable checks via environment variable: `NO_UPDATE_NOTIFIER=1`
 - Respect CI/dumb terminal detection (suppress in non-TTY)
 
 ## 5. Popular CLI Examples
 
 ### npm [1]
+
 - Built custom implementation (dropped update-notifier dependency)
 - Checks once per day during regular commands
 - Uses existing npm registry client
 - Displays update message at command completion
 
 ### Yarn [1]
+
 - Checks on startup, ~once per day
 - Shows version number + upgrade instructions
 - Command: `yarn self-update` (Classic) or `corepack prepare yarn@stable --activate`
 
 ### GitHub CLI [2]
+
 - Faces unique rate limiting challenges (GraphQL API costs)
 - Proposed: warn at 50-75% rate limit consumption
 - Current: investigate root causes vs automatic retries
 
 ### Bun/Deno
+
 - Bun: Built-in `bun upgrade` command
 - Checks version server with minimal metadata
 - Both optimize for speed (Rust/Zig implementations)
@@ -114,6 +130,7 @@ Modern CLIs use non-blocking, cached version checks with infrequent polling (wee
 ## Implementation Recommendations
 
 ### Essential Features
+
 1. **Weekly check interval** (industry standard)
 2. **Unref'ed child process** for background checks
 3. **File-based cache** in user config directory
@@ -121,9 +138,10 @@ Modern CLIs use non-blocking, cached version checks with infrequent polling (wee
 5. **Environment variable opt-out** (`NO_UPDATE_NOTIFIER`)
 
 ### Code Pattern (Node.js)
+
 ```javascript
-import updateNotifier from 'update-notifier';
-import pkg from './package.json' assert {type: 'json'};
+import updateNotifier from "update-notifier";
+import pkg from "./package.json" assert { type: "json" };
 
 // Non-blocking, uses cache
 const notifier = updateNotifier({
@@ -132,12 +150,13 @@ const notifier = updateNotifier({
 });
 
 // Show after command completes
-process.on('exit', () => {
-  notifier.notify({defer: false});
+process.on("exit", () => {
+  notifier.notify({ defer: false });
 });
 ```
 
 ### Alternative: simple-update-notifier
+
 - Zero dependencies (vs 50+ for update-notifier)
 - Same core functionality
 - Lighter weight for security-conscious projects

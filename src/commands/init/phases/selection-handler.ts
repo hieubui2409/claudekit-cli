@@ -13,7 +13,7 @@ import { readClaudeKitMetadata } from "@/services/file-operations/claudekit-scan
 import { readManifest } from "@/services/file-operations/manifest/manifest-reader.js";
 import { logger } from "@/shared/logger.js";
 import { PathResolver } from "@/shared/path-resolver.js";
-import { AVAILABLE_KITS, type KitType } from "@/types";
+import { AVAILABLE_KITS, type GitHubRelease, type KitType } from "@/types";
 import { pathExists } from "fs-extra";
 import type { InitContext } from "../types.js";
 import { isSyncContext } from "../types.js";
@@ -22,332 +22,430 @@ import { isSyncContext } from "../types.js";
  * Select kit, target directory, and version
  */
 export async function handleSelection(ctx: InitContext): Promise<InitContext> {
-	if (ctx.cancelled) return ctx;
+  if (ctx.cancelled) return ctx;
 
-	// Check if sync mode has already set these values
-	if (isSyncContext(ctx) && ctx.kitType && ctx.resolvedDir && ctx.selectedVersion) {
-		// Sync mode: values already set, just fetch the kit and release
-		const kit = AVAILABLE_KITS[ctx.kitType];
-		const github = new GitHubClient();
+  // LOCAL FOLDER MODE: Skip all GitHub operations
+  if (ctx.isLocalFolder && ctx.options.folder) {
+    logger.info("Local folder mode - skipping GitHub operations");
 
-		logger.info(`Sync mode: using ${kit.name} version ${ctx.selectedVersion}`);
+    // Still need kit selection for manifest tracking
+    const config = await ConfigManager.get();
+    let kitType: KitType = (ctx.options.kit || config.defaults?.kit) as KitType;
+    if (!kitType) {
+      if (ctx.isNonInteractive) {
+        kitType = "engineer";
+        logger.info("Using default kit: engineer");
+      } else {
+        kitType = await ctx.prompts.selectKit();
+      }
+    }
 
-		const release = await github.getReleaseByTag(kit, ctx.selectedVersion);
+    const kit = AVAILABLE_KITS[kitType];
+    logger.info(`Selected kit: ${kit.name}`);
 
-		return {
-			...ctx,
-			kit,
-			release,
-		};
-	}
+    // Get target directory (same logic as normal flow)
+    let targetDir: string;
+    if (ctx.explicitDir) {
+      targetDir = ctx.options.dir;
+      logger.info(`Using explicit directory: ${targetDir}`);
+    } else if (ctx.options.global) {
+      targetDir = PathResolver.getGlobalKitDir();
+      logger.info(`Using global kit directory: ${targetDir}`);
+    } else {
+      targetDir = config.defaults?.dir || ".";
+      if (!config.defaults?.dir) {
+        if (ctx.isNonInteractive) {
+          logger.info("Using current directory as target");
+        } else {
+          targetDir = await ctx.prompts.getDirectory(targetDir);
+        }
+      }
+    }
 
-	// Load config for defaults
-	const config = await ConfigManager.get();
+    const resolvedDir = resolve(targetDir);
+    logger.info(`Target directory: ${resolvedDir}`);
 
-	// Detect accessible kits upfront (skip for --use-git mode which uses git credentials)
-	let accessibleKits: KitType[] | undefined;
-	if (!ctx.options.useGit) {
-		accessibleKits = await detectAccessibleKits();
+    // Check if directory exists (create if global mode)
+    if (!(await pathExists(resolvedDir))) {
+      if (ctx.options.global) {
+        await mkdir(resolvedDir, { recursive: true });
+        logger.info(`Created global directory: ${resolvedDir}`);
+      } else {
+        logger.error(`Directory does not exist: ${resolvedDir}`);
+        logger.info('Use "ck new" to create a new project');
+        return { ...ctx, cancelled: true };
+      }
+    }
 
-		if (accessibleKits.length === 0) {
-			logger.error("No ClaudeKit access found.");
-			logger.info("Purchase at https://claudekit.cc");
-			return { ...ctx, cancelled: true };
-		}
-	}
+    // Create mock release for manifest (version from folder validation or "local")
+    const mockRelease: GitHubRelease = {
+      id: 0,
+      name: "Local Folder",
+      tag_name: "local",
+      draft: false,
+      prerelease: false,
+      tarball_url: "",
+      zipball_url: "",
+      assets: [],
+    };
 
-	// Get kit selection
-	let kitType: KitType | undefined;
-	let pendingKits: KitType[] | undefined;
+    return {
+      ...ctx,
+      kit,
+      kitType,
+      resolvedDir,
+      release: mockRelease,
+      selectedVersion: "local",
+      extractDir: ctx.options.folder, // Use folder as extractDir
+    };
+  }
 
-	// Parse --kit option: supports "all", "engineer,marketing", or single kit
-	const kitOption = ctx.options.kit || config.defaults?.kit;
-	if (kitOption) {
-		const allKitTypes: KitType[] = Object.keys(AVAILABLE_KITS) as KitType[];
+  // Check if sync mode has already set these values
+  if (
+    isSyncContext(ctx) &&
+    ctx.kitType &&
+    ctx.resolvedDir &&
+    ctx.selectedVersion
+  ) {
+    // Sync mode: values already set, just fetch the kit and release
+    const kit = AVAILABLE_KITS[ctx.kitType];
+    const github = new GitHubClient();
 
-		if (kitOption === "all") {
-			// --kit all: install all accessible kits
-			const kitsToInstall = accessibleKits ?? allKitTypes;
-			if (kitsToInstall.length === 0) {
-				logger.error("No kits accessible for installation");
-				return { ...ctx, cancelled: true };
-			}
-			kitType = kitsToInstall[0];
-			if (kitsToInstall.length > 1) {
-				pendingKits = kitsToInstall.slice(1);
-			}
-			logger.info(
-				`Installing all accessible kits: ${kitsToInstall.map((k) => AVAILABLE_KITS[k].name).join(", ")}`,
-			);
-		} else if (kitOption.includes(",")) {
-			// Comma-separated: --kit engineer,marketing
-			const requestedKits = kitOption.split(",").map((k) => k.trim()) as KitType[];
-			const invalidKits = requestedKits.filter((k) => !allKitTypes.includes(k));
-			if (invalidKits.length > 0) {
-				logger.error(`Invalid kit(s): ${invalidKits.join(", ")}`);
-				logger.info(`Valid kits: ${allKitTypes.join(", ")}`);
-				return { ...ctx, cancelled: true };
-			}
-			// Validate access for all requested kits
-			if (accessibleKits) {
-				const noAccessKits = requestedKits.filter((k) => !accessibleKits.includes(k));
-				if (noAccessKits.length > 0) {
-					logger.error(
-						`No access to: ${noAccessKits.map((k) => AVAILABLE_KITS[k].name).join(", ")}`,
-					);
-					logger.info("Purchase at https://claudekit.cc");
-					return { ...ctx, cancelled: true };
-				}
-			}
-			kitType = requestedKits[0];
-			if (requestedKits.length > 1) {
-				pendingKits = requestedKits.slice(1);
-			}
-			logger.info(
-				`Installing kits: ${requestedKits.map((k) => AVAILABLE_KITS[k].name).join(", ")}`,
-			);
-		} else {
-			// Single kit
-			kitType = kitOption as KitType;
-			// Validate explicit --kit flag has access
-			if (accessibleKits && !accessibleKits.includes(kitType)) {
-				logger.error(`No access to ${AVAILABLE_KITS[kitType].name}`);
-				logger.info("Purchase at https://claudekit.cc");
-				return { ...ctx, cancelled: true };
-			}
-		}
-	}
+    logger.info(`Sync mode: using ${kit.name} version ${ctx.selectedVersion}`);
 
-	if (!kitType) {
-		if (ctx.isNonInteractive) {
-			// Non-interactive requires accessible kit or error
-			if (!accessibleKits || accessibleKits.length === 0) {
-				throw new Error(
-					"Kit must be specified via --kit flag in non-interactive mode (no accessible kits detected)",
-				);
-			}
-			kitType = accessibleKits[0];
-			logger.info(`Auto-selected: ${AVAILABLE_KITS[kitType].name}`);
-		} else if (accessibleKits?.length === 1) {
-			// Only one kit accessible - skip prompt
-			kitType = accessibleKits[0];
-			logger.info(`Using ${AVAILABLE_KITS[kitType].name} (only accessible kit)`);
-		} else if (accessibleKits && accessibleKits.length > 1) {
-			// Multiple kits accessible (>1 = at least 2, matching MIN_KITS_FOR_MULTISELECT)
-			// Use multi-select prompt
-			const selectedKits = await ctx.prompts.selectKits(accessibleKits);
-			// Defensive check: selectKits uses required:true which prevents empty selection,
-			// but we validate here as well for robustness
-			if (selectedKits.length === 0) {
-				throw new Error("At least one kit must be selected");
-			}
-			// First kit is the primary, rest are pending
-			kitType = selectedKits[0];
-			if (selectedKits.length > 1) {
-				pendingKits = selectedKits.slice(1);
-				logger.success(
-					`Selected ${selectedKits.length} kits: ${selectedKits.map((k) => AVAILABLE_KITS[k].name).join(", ")}`,
-				);
-			}
-		} else {
-			// --use-git mode - single select from all kits
-			kitType = await ctx.prompts.selectKit(undefined, accessibleKits);
-		}
-	}
+    const release = await github.getReleaseByTag(kit, ctx.selectedVersion);
 
-	const kit = AVAILABLE_KITS[kitType];
-	logger.info(`Selected kit: ${kit.name}`);
+    return {
+      ...ctx,
+      kit,
+      release,
+      selectedVersion: ctx.selectedVersion,
+    };
+  }
 
-	// Get target directory
-	let targetDir: string;
+  // Load config for defaults
+  const config = await ConfigManager.get();
 
-	if (ctx.explicitDir) {
-		targetDir = ctx.options.dir;
-		logger.info(`Using explicit directory: ${targetDir}`);
-	} else if (ctx.options.global) {
-		targetDir = PathResolver.getGlobalKitDir();
-		logger.info(`Using global kit directory: ${targetDir}`);
-	} else {
-		targetDir = config.defaults?.dir || ".";
-		if (!config.defaults?.dir) {
-			if (ctx.isNonInteractive) {
-				logger.info("Using current directory as target");
-			} else {
-				targetDir = await ctx.prompts.getDirectory(targetDir);
-			}
-		}
-	}
+  // Detect accessible kits upfront (skip for --use-git mode which uses git credentials)
+  let accessibleKits: KitType[] | undefined;
+  if (!ctx.options.useGit) {
+    accessibleKits = await detectAccessibleKits();
 
-	const resolvedDir = resolve(targetDir);
-	logger.info(`Target directory: ${resolvedDir}`);
+    if (accessibleKits.length === 0) {
+      logger.error("No ClaudeKit access found.");
+      logger.info("Purchase at https://claudekit.cc");
+      return { ...ctx, cancelled: true };
+    }
+  }
 
-	// Check if directory exists (create if global mode)
-	if (!(await pathExists(resolvedDir))) {
-		if (ctx.options.global) {
-			await mkdir(resolvedDir, { recursive: true });
-			logger.info(`Created global directory: ${resolvedDir}`);
-		} else {
-			logger.error(`Directory does not exist: ${resolvedDir}`);
-			logger.info('Use "ck new" to create a new project');
-			return { ...ctx, cancelled: true };
-		}
-	}
+  // Get kit selection
+  let kitType: KitType | undefined;
+  let pendingKits: KitType[] | undefined;
 
-	// Check for existing kits and prompt confirmation for multi-kit installation
-	if (!ctx.options.fresh) {
-		const prefix = PathResolver.getPathPrefix(ctx.options.global);
-		const claudeDir = prefix ? join(resolvedDir, prefix) : resolvedDir;
+  // Parse --kit option: supports "all", "engineer,marketing", or single kit
+  const kitOption = ctx.options.kit || config.defaults?.kit;
+  if (kitOption) {
+    const allKitTypes: KitType[] = Object.keys(AVAILABLE_KITS) as KitType[];
 
-		try {
-			const existingMetadata = await readManifest(claudeDir);
-			if (existingMetadata?.kits) {
-				const existingKitTypes = Object.keys(existingMetadata.kits) as KitType[];
-				const otherKits = existingKitTypes.filter((k) => k !== kitType);
+    if (kitOption === "all") {
+      // --kit all: install all accessible kits
+      const kitsToInstall = accessibleKits ?? allKitTypes;
+      if (kitsToInstall.length === 0) {
+        logger.error("No kits accessible for installation");
+        return { ...ctx, cancelled: true };
+      }
+      kitType = kitsToInstall[0];
+      if (kitsToInstall.length > 1) {
+        pendingKits = kitsToInstall.slice(1);
+      }
+      logger.info(
+        `Installing all accessible kits: ${kitsToInstall.map((k) => AVAILABLE_KITS[k].name).join(", ")}`,
+      );
+    } else if (kitOption.includes(",")) {
+      // Comma-separated: --kit engineer,marketing
+      const requestedKits = kitOption
+        .split(",")
+        .map((k) => k.trim()) as KitType[];
+      const invalidKits = requestedKits.filter((k) => !allKitTypes.includes(k));
+      if (invalidKits.length > 0) {
+        logger.error(`Invalid kit(s): ${invalidKits.join(", ")}`);
+        logger.info(`Valid kits: ${allKitTypes.join(", ")}`);
+        return { ...ctx, cancelled: true };
+      }
+      // Validate access for all requested kits
+      if (accessibleKits) {
+        const noAccessKits = requestedKits.filter(
+          (k) => !accessibleKits.includes(k),
+        );
+        if (noAccessKits.length > 0) {
+          logger.error(
+            `No access to: ${noAccessKits.map((k) => AVAILABLE_KITS[k].name).join(", ")}`,
+          );
+          logger.info("Purchase at https://claudekit.cc");
+          return { ...ctx, cancelled: true };
+        }
+      }
+      kitType = requestedKits[0];
+      if (requestedKits.length > 1) {
+        pendingKits = requestedKits.slice(1);
+      }
+      logger.info(
+        `Installing kits: ${requestedKits.map((k) => AVAILABLE_KITS[k].name).join(", ")}`,
+      );
+    } else {
+      // Single kit
+      kitType = kitOption as KitType;
+      // Validate explicit --kit flag has access
+      if (accessibleKits && !accessibleKits.includes(kitType)) {
+        logger.error(`No access to ${AVAILABLE_KITS[kitType].name}`);
+        logger.info("Purchase at https://claudekit.cc");
+        return { ...ctx, cancelled: true };
+      }
+    }
+  }
 
-				if (otherKits.length > 0) {
-					// Format existing kits for display
-					const existingKitsDisplay = otherKits
-						.map((k) => `${k}@${existingMetadata.kits?.[k]?.version || "unknown"}`)
-						.join(", ");
+  if (!kitType) {
+    if (ctx.isNonInteractive) {
+      // Non-interactive requires accessible kit or error
+      if (!accessibleKits || accessibleKits.length === 0) {
+        throw new Error(
+          "Kit must be specified via --kit flag in non-interactive mode (no accessible kits detected)",
+        );
+      }
+      kitType = accessibleKits[0];
+      logger.info(`Auto-selected: ${AVAILABLE_KITS[kitType].name}`);
+    } else if (accessibleKits?.length === 1) {
+      // Only one kit accessible - skip prompt
+      kitType = accessibleKits[0];
+      logger.info(
+        `Using ${AVAILABLE_KITS[kitType].name} (only accessible kit)`,
+      );
+    } else if (accessibleKits && accessibleKits.length > 1) {
+      // Multiple kits accessible (>1 = at least 2, matching MIN_KITS_FOR_MULTISELECT)
+      // Use multi-select prompt
+      const selectedKits = await ctx.prompts.selectKits(accessibleKits);
+      // Defensive check: selectKits uses required:true which prevents empty selection,
+      // but we validate here as well for robustness
+      if (selectedKits.length === 0) {
+        throw new Error("At least one kit must be selected");
+      }
+      // First kit is the primary, rest are pending
+      kitType = selectedKits[0];
+      if (selectedKits.length > 1) {
+        pendingKits = selectedKits.slice(1);
+        logger.success(
+          `Selected ${selectedKits.length} kits: ${selectedKits.map((k) => AVAILABLE_KITS[k].name).join(", ")}`,
+        );
+      }
+    } else {
+      // --use-git mode - single select from all kits
+      kitType = await ctx.prompts.selectKit(undefined, accessibleKits);
+    }
+  }
 
-					// Skip confirmation with --yes flag or non-interactive mode
-					if (!ctx.options.yes && !ctx.isNonInteractive) {
-						try {
-							const confirmAdd = await ctx.prompts.confirm(
-								`${existingKitsDisplay} already installed. Add ${kit.name} alongside?`,
-							);
+  const kit = AVAILABLE_KITS[kitType];
+  logger.info(`Selected kit: ${kit.name}`);
 
-							if (!confirmAdd) {
-								logger.warning("Multi-kit installation cancelled by user");
-								return { ...ctx, cancelled: true };
-							}
-							logger.info(`Adding ${kit.name} alongside existing kit(s)`);
-						} catch {
-							logger.warning("Prompt cancelled or interrupted");
-							return { ...ctx, cancelled: true };
-						}
-					} else {
-						const reason = ctx.options.yes ? "(--yes flag)" : "(non-interactive mode)";
-						logger.info(`Adding ${kit.name} alongside ${existingKitsDisplay} ${reason}`);
-					}
-				}
-			}
-		} catch (error) {
-			// No existing metadata or read error - proceed with installation
-			logger.debug(
-				`Metadata read skipped: ${error instanceof Error ? error.message : "unknown error"}`,
-			);
-		}
-	}
+  // Get target directory
+  let targetDir: string;
 
-	// Handle --fresh flag: completely remove .claude directory
-	if (ctx.options.fresh) {
-		const prefix = PathResolver.getPathPrefix(ctx.options.global);
-		const claudeDir = prefix ? join(resolvedDir, prefix) : resolvedDir;
+  if (ctx.explicitDir) {
+    targetDir = ctx.options.dir;
+    logger.info(`Using explicit directory: ${targetDir}`);
+  } else if (ctx.options.global) {
+    targetDir = PathResolver.getGlobalKitDir();
+    logger.info(`Using global kit directory: ${targetDir}`);
+  } else {
+    targetDir = config.defaults?.dir || ".";
+    if (!config.defaults?.dir) {
+      if (ctx.isNonInteractive) {
+        logger.info("Using current directory as target");
+      } else {
+        targetDir = await ctx.prompts.getDirectory(targetDir);
+      }
+    }
+  }
 
-		const canProceed = await handleFreshInstallation(claudeDir, ctx.prompts);
-		if (!canProceed) {
-			return { ...ctx, cancelled: true };
-		}
-	}
+  const resolvedDir = resolve(targetDir);
+  logger.info(`Target directory: ${resolvedDir}`);
 
-	// Access already verified during kit selection (or skipped for --use-git mode)
-	const github = new GitHubClient();
+  // Check if directory exists (create if global mode)
+  if (!(await pathExists(resolvedDir))) {
+    if (ctx.options.global) {
+      await mkdir(resolvedDir, { recursive: true });
+      logger.info(`Created global directory: ${resolvedDir}`);
+    } else {
+      logger.error(`Directory does not exist: ${resolvedDir}`);
+      logger.info('Use "ck new" to create a new project');
+      return { ...ctx, cancelled: true };
+    }
+  }
 
-	// Determine version selection
-	let selectedVersion: string | undefined = ctx.options.release;
+  // Check for existing kits and prompt confirmation for multi-kit installation
+  if (!ctx.options.fresh) {
+    const prefix = PathResolver.getPathPrefix(ctx.options.global);
+    const claudeDir = prefix ? join(resolvedDir, prefix) : resolvedDir;
 
-	// Non-interactive mode without explicit version handling
-	if (!selectedVersion && ctx.isNonInteractive && !ctx.options.yes) {
-		throw new Error("Non-interactive mode requires either: --release <tag> OR --yes (uses latest)");
-	}
+    try {
+      const existingMetadata = await readManifest(claudeDir);
+      if (existingMetadata?.kits) {
+        const existingKitTypes = Object.keys(
+          existingMetadata.kits,
+        ) as KitType[];
+        const otherKits = existingKitTypes.filter((k) => k !== kitType);
 
-	if (!selectedVersion && ctx.options.yes) {
-		logger.info("Using latest stable version (--yes flag)");
-	}
+        if (otherKits.length > 0) {
+          // Format existing kits for display
+          const existingKitsDisplay = otherKits
+            .map(
+              (k) => `${k}@${existingMetadata.kits?.[k]?.version || "unknown"}`,
+            )
+            .join(", ");
 
-	// Interactive version selection
-	if (!selectedVersion && !ctx.isNonInteractive) {
-		logger.info("Fetching available versions...");
+          // Skip confirmation with --yes flag or non-interactive mode
+          if (!ctx.options.yes && !ctx.isNonInteractive) {
+            try {
+              const confirmAdd = await ctx.prompts.confirm(
+                `${existingKitsDisplay} already installed. Add ${kit.name} alongside?`,
+              );
 
-		// Get currently installed version
-		let currentVersion: string | null = null;
-		try {
-			const metadataPath = ctx.options.global
-				? join(PathResolver.getGlobalKitDir(), "metadata.json")
-				: join(resolvedDir, ".claude", "metadata.json");
-			const metadata = await readClaudeKitMetadata(metadataPath);
-			currentVersion = metadata?.version || null;
-			if (currentVersion) {
-				logger.debug(`Current installed version: ${currentVersion}`);
-			}
-		} catch {
-			// No existing installation
-		}
+              if (!confirmAdd) {
+                logger.warning("Multi-kit installation cancelled by user");
+                return { ...ctx, cancelled: true };
+              }
+              logger.info(`Adding ${kit.name} alongside existing kit(s)`);
+            } catch {
+              logger.warning("Prompt cancelled or interrupted");
+              return { ...ctx, cancelled: true };
+            }
+          } else {
+            const reason = ctx.options.yes
+              ? "(--yes flag)"
+              : "(non-interactive mode)";
+            logger.info(
+              `Adding ${kit.name} alongside ${existingKitsDisplay} ${reason}`,
+            );
+          }
+        }
+      }
+    } catch (error) {
+      // No existing metadata or read error - proceed with installation
+      logger.debug(
+        `Metadata read skipped: ${error instanceof Error ? error.message : "unknown error"}`,
+      );
+    }
+  }
 
-		try {
-			const versionResult = await ctx.prompts.selectVersionEnhanced({
-				kit,
-				includePrereleases: ctx.options.beta,
-				limit: 10,
-				allowManualEntry: true,
-				forceRefresh: ctx.options.refresh,
-				currentVersion,
-			});
+  // Handle --fresh flag: completely remove .claude directory
+  if (ctx.options.fresh) {
+    const prefix = PathResolver.getPathPrefix(ctx.options.global);
+    const claudeDir = prefix ? join(resolvedDir, prefix) : resolvedDir;
 
-			if (!versionResult) {
-				logger.warning("Version selection cancelled by user");
-				return { ...ctx, cancelled: true };
-			}
+    const canProceed = await handleFreshInstallation(claudeDir, ctx.prompts);
+    if (!canProceed) {
+      return { ...ctx, cancelled: true };
+    }
+  }
 
-			selectedVersion = versionResult;
-			logger.success(`Selected version: ${selectedVersion}`);
-		} catch (error: any) {
-			logger.error("Failed to fetch versions, using latest release");
-			logger.debug(`Version selection error: ${error.message}`);
-			selectedVersion = undefined;
-		}
-	}
+  // Access already verified during kit selection (or skipped for --use-git mode)
+  const github = new GitHubClient();
 
-	// Get release (skip API call for git clone mode - just need tag name)
-	let release;
-	if (ctx.options.useGit && selectedVersion) {
-		// For git clone, create minimal release object with just the tag
-		release = {
-			id: 0,
-			tag_name: selectedVersion,
-			name: selectedVersion,
-			draft: false,
-			prerelease: selectedVersion.includes("-"),
-			tarball_url: `https://github.com/${kit.owner}/${kit.repo}/archive/refs/tags/${selectedVersion}.tar.gz`,
-			zipball_url: `https://github.com/${kit.owner}/${kit.repo}/archive/refs/tags/${selectedVersion}.zip`,
-			assets: [],
-		};
-		logger.verbose("Using git clone mode with tag", { tag: selectedVersion });
-	} else if (selectedVersion) {
-		release = await github.getReleaseByTag(kit, selectedVersion);
-	} else {
-		if (ctx.options.beta) {
-			logger.info("Fetching latest beta release...");
-		} else {
-			logger.info("Fetching latest release...");
-		}
-		release = await github.getLatestRelease(kit, ctx.options.beta);
-		if (release.prerelease) {
-			logger.success(`Found beta: ${release.tag_name}`);
-		} else {
-			logger.success(`Found: ${release.tag_name}`);
-		}
-	}
+  // Determine version selection
+  let selectedVersion: string | undefined = ctx.options.release;
 
-	return {
-		...ctx,
-		kit,
-		kitType,
-		resolvedDir,
-		release,
-		selectedVersion,
-		pendingKits,
-		accessibleKits,
-	};
+  // Non-interactive mode without explicit version handling
+  if (!selectedVersion && ctx.isNonInteractive && !ctx.options.yes) {
+    throw new Error(
+      "Non-interactive mode requires either: --release <tag> OR --yes (uses latest)",
+    );
+  }
+
+  if (!selectedVersion && ctx.options.yes) {
+    logger.info("Using latest stable version (--yes flag)");
+  }
+
+  // Interactive version selection
+  if (!selectedVersion && !ctx.isNonInteractive) {
+    logger.info("Fetching available versions...");
+
+    // Get currently installed version
+    let currentVersion: string | null = null;
+    try {
+      const metadataPath = ctx.options.global
+        ? join(PathResolver.getGlobalKitDir(), "metadata.json")
+        : join(resolvedDir, ".claude", "metadata.json");
+      const metadata = await readClaudeKitMetadata(metadataPath);
+      currentVersion = metadata?.version || null;
+      if (currentVersion) {
+        logger.debug(`Current installed version: ${currentVersion}`);
+      }
+    } catch {
+      // No existing installation
+    }
+
+    try {
+      const versionResult = await ctx.prompts.selectVersionEnhanced({
+        kit,
+        includePrereleases: ctx.options.beta,
+        limit: 10,
+        allowManualEntry: true,
+        forceRefresh: ctx.options.refresh,
+        currentVersion,
+      });
+
+      if (!versionResult) {
+        logger.warning("Version selection cancelled by user");
+        return { ...ctx, cancelled: true };
+      }
+
+      selectedVersion = versionResult;
+      logger.success(`Selected version: ${selectedVersion}`);
+    } catch (error: any) {
+      logger.error("Failed to fetch versions, using latest release");
+      logger.debug(`Version selection error: ${error.message}`);
+      selectedVersion = undefined;
+    }
+  }
+
+  // Get release (skip API call for git clone mode - just need tag name)
+  let release;
+  if (ctx.options.useGit && selectedVersion) {
+    // For git clone, create minimal release object with just the tag
+    release = {
+      id: 0,
+      tag_name: selectedVersion,
+      name: selectedVersion,
+      draft: false,
+      prerelease: selectedVersion.includes("-"),
+      tarball_url: `https://github.com/${kit.owner}/${kit.repo}/archive/refs/tags/${selectedVersion}.tar.gz`,
+      zipball_url: `https://github.com/${kit.owner}/${kit.repo}/archive/refs/tags/${selectedVersion}.zip`,
+      assets: [],
+    };
+    logger.verbose("Using git clone mode with tag", { tag: selectedVersion });
+  } else if (selectedVersion) {
+    release = await github.getReleaseByTag(kit, selectedVersion);
+  } else {
+    if (ctx.options.beta) {
+      logger.info("Fetching latest beta release...");
+    } else {
+      logger.info("Fetching latest release...");
+    }
+    release = await github.getLatestRelease(kit, ctx.options.beta);
+    if (release.prerelease) {
+      logger.success(`Found beta: ${release.tag_name}`);
+    } else {
+      logger.success(`Found: ${release.tag_name}`);
+    }
+  }
+
+  return {
+    ...ctx,
+    kit,
+    kitType,
+    resolvedDir,
+    release,
+    selectedVersion,
+    pendingKits,
+    accessibleKits,
+  };
 }

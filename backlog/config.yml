@@ -1,7 +1,24 @@
 project_name: "backlog"
 default_status: "To Do"
 statuses: ["To Do", "In Progress", "Done"]
-labels: ["bug", "enhancement", "testing", "ux", "investigation", "student-dashboard", "teacher-dashboard", "admin", "booking", "notifications", "analytics", "thymeleaf", "type-conversion", "lesson-module", "htmx"]
+labels:
+  [
+    "bug",
+    "enhancement",
+    "testing",
+    "ux",
+    "investigation",
+    "student-dashboard",
+    "teacher-dashboard",
+    "admin",
+    "booking",
+    "notifications",
+    "analytics",
+    "thymeleaf",
+    "type-conversion",
+    "lesson-module",
+    "htmx",
+  ]
 milestones: []
 date_format: yyyy-mm-dd
 max_column_width: 20

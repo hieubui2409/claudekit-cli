@@ -16,7 +16,7 @@ const binDir = join(rootDir, "bin");
 
 // Ensure bin directory exists
 if (!existsSync(binDir)) {
-	mkdirSync(binDir, { recursive: true });
+  mkdirSync(binDir, { recursive: true });
 }
 
 // Build the main binary first
@@ -25,10 +25,10 @@ execSync("bun run compile", { cwd: rootDir, stdio: "inherit" });
 
 // Platform-specific binary mapping
 const platforms = [
-	{ name: "darwin-arm64", ext: "" },
-	{ name: "darwin-x64", ext: "" },
-	{ name: "linux-x64", ext: "" },
-	{ name: "win32-x64", ext: ".exe" },
+  { name: "darwin-arm64", ext: "" },
+  { name: "darwin-x64", ext: "" },
+  { name: "linux-x64", ext: "" },
+  { name: "win32-x64", ext: ".exe" },
 ];
 
 console.log("📦 Creating platform-specific binaries...");
@@ -40,20 +40,20 @@ const currentArch = process.arch;
 
 let platformName;
 if (currentPlatform === "darwin") {
-	platformName = `darwin-${currentArch}`;
+  platformName = `darwin-${currentArch}`;
 } else if (currentPlatform === "linux") {
-	platformName = `linux-${currentArch}`;
+  platformName = `linux-${currentArch}`;
 } else if (currentPlatform === "win32") {
-	platformName = `win32-${currentArch}`;
+  platformName = `win32-${currentArch}`;
 } else {
-	console.error(`❌ Unsupported platform: ${currentPlatform}-${currentArch}`);
-	process.exit(1);
+  console.error(`❌ Unsupported platform: ${currentPlatform}-${currentArch}`);
+  process.exit(1);
 }
 
 const platform = platforms.find((p) => p.name === platformName);
 if (!platform) {
-	console.error(`❌ Platform not found in mapping: ${platformName}`);
-	process.exit(1);
+  console.error(`❌ Platform not found in mapping: ${platformName}`);
+  process.exit(1);
 }
 
 const sourceBinary = join(rootDir, "ck");
@@ -64,7 +64,7 @@ copyFileSync(sourceBinary, targetBinary);
 
 // Make it executable on Unix-like systems
 if (currentPlatform !== "win32") {
-	execSync(`chmod +x ${targetBinary}`, { stdio: "inherit" });
+  execSync(`chmod +x ${targetBinary}`, { stdio: "inherit" });
 }
 
 console.log("✅ Platform binaries built successfully!");

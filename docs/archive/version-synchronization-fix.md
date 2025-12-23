@@ -3,12 +3,14 @@
 ## Problem
 
 Users experienced a version discrepancy where:
+
 - `npm show claudekit-cli version` showed `1.9.2`
 - But `ck --version` showed `1.9.1`
 
 ## Root Cause
 
 The issue occurred because:
+
 1. Precompiled binaries in the `bin/` directory were built with an older version of the source code
 2. The release process built binaries BEFORE semantic-release bumped the package.json version
 3. This resulted in published packages containing outdated binaries with incorrect versions
@@ -16,6 +18,7 @@ The issue occurred because:
 ## Solution
 
 ### 1. Fixed Release Workflow
+
 - Updated `.github/workflows/release.yml` to use the existing build-binaries workflow
 - Created custom semantic-release plugin to rebuild binaries AFTER version bump
 - Added binary verification step in release process
@@ -23,26 +26,31 @@ The issue occurred because:
 ### 2. Added Version Synchronization Scripts
 
 #### `scripts/build-binaries-after-version-bump.js`
+
 - Custom semantic-release plugin
 - Rebuilds all platform binaries after package.json version is bumped
 - Ensures binaries contain correct version
 
 #### `scripts/check-binary-version-sync.js`
+
 - Pre-commit hook script
 - Verifies binary versions match package.json version
 - Prevents commits with version mismatches
 
 #### `scripts/build-all-binaries.js`
+
 - Utility script to build all platform binaries locally
 - Useful for testing and development
 
 ### 3. Pre-commit Hook Protection
+
 - Added `.git/hooks/pre-commit` to automatically:
   - Check binary version synchronization
   - Run linting
   - Prevent commits with version mismatches
 
 ### 4. Updated Package.json Scripts
+
 - `compile:binaries`: Build all platform binaries
 - `check-version-sync`: Verify binary versions match package.json
 
@@ -57,6 +65,7 @@ The issue occurred because:
 ## How to Prevent Future Issues
 
 1. **Always use the new scripts**:
+
    ```bash
    npm run compile:binaries  # Build all binaries
    npm run check-version-sync  # Verify versions

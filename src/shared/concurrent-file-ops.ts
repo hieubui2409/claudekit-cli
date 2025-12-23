@@ -17,10 +17,10 @@ const DEFAULT_CONCURRENCY = 50;
  * @returns Results in same order as input
  */
 export async function mapWithLimit<T, R>(
-	items: T[],
-	fn: (item: T) => Promise<R>,
-	concurrency = DEFAULT_CONCURRENCY,
+  items: T[],
+  fn: (item: T) => Promise<R>,
+  concurrency = DEFAULT_CONCURRENCY,
 ): Promise<R[]> {
-	const limit = pLimit(concurrency);
-	return Promise.all(items.map((item) => limit(() => fn(item))));
+  const limit = pLimit(concurrency);
+  return Promise.all(items.map((item) => limit(() => fn(item))));
 }

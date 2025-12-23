@@ -9,12 +9,14 @@ ClaudeKit CLI v1.17+ supports multiple kits (engineer, marketing) in a single in
 ### When Migration Occurs
 
 Migration happens automatically during:
+
 - `ck init` - When installing a kit into an existing installation
 - `ck new` - When creating a new project (fresh multi-kit format)
 
 ### What Gets Migrated
 
 Legacy single-kit metadata:
+
 ```json
 {
   "name": "ClaudeKit Engineer",
@@ -26,6 +28,7 @@ Legacy single-kit metadata:
 ```
 
 Becomes multi-kit format:
+
 ```json
 {
   "kits": {
@@ -52,6 +55,7 @@ Becomes multi-kit format:
 ### Concurrent Installation Protection
 
 File locking prevents race conditions when multiple processes install kits simultaneously:
+
 - Uses `proper-lockfile` for atomic read-modify-write operations
 - Retries up to 5 times with exponential backoff
 - Lock considered stale after 10 seconds (crash recovery)
@@ -81,6 +85,7 @@ ck uninstall
 ### Shared File Handling
 
 When both kits track the same file, uninstalling one kit preserves the file for the other:
+
 - Files only deleted when no remaining kit references them
 - Works correctly even with different versions/checksums across kits
 
@@ -111,6 +116,7 @@ cat .claude/metadata.json
 ### "Lock acquisition failed"
 
 If installation hangs or fails with lock errors:
+
 1. Check for stale lock files: `.claude/metadata.json.lock`
 2. Remove manually if process crashed: `rm .claude/metadata.json.lock`
 3. Retry installation
@@ -118,6 +124,7 @@ If installation hangs or fails with lock errors:
 ### Migration Warning Messages
 
 `Metadata migration warning: ...`
+
 - Usually indicates corrupted or malformed metadata.json
 - Migration continues with best-effort approach
 - Check verbose output with `--verbose` for details
@@ -125,6 +132,7 @@ If installation hangs or fails with lock errors:
 ### Kit Not Found During Uninstall
 
 `Kit "marketing" is not installed`
+
 - Use `ck versions` to see installed kits
 - Check both local and global installations
 
@@ -133,6 +141,7 @@ If installation hangs or fails with lock errors:
 ### Metadata Schema
 
 See `src/types/metadata.ts` for full Zod schemas:
+
 - `KitMetadataSchema`: Per-kit version, files, installedAt
 - `MultiKitMetadataSchema`: Root structure with kits map
 - `MetadataSchema`: Combined schema with legacy fields
@@ -140,6 +149,7 @@ See `src/types/metadata.ts` for full Zod schemas:
 ### Detection Logic
 
 Migration detection in `src/domains/migration/metadata-migration.ts`:
+
 1. Check for `kits` object with entries → multi-kit format
 2. Check for `name`/`version`/`files` at root → legacy format
 3. Otherwise → no metadata (fresh install)

@@ -22,16 +22,16 @@ import { logger } from "@/shared/logger.js";
 import { getGlobalMcpConfigPath } from "./validation.js";
 
 export interface GeminiLinkResult {
-	success: boolean;
-	method: "symlink" | "merge" | "skipped";
-	targetPath?: string;
-	geminiSettingsPath?: string;
-	error?: string;
+  success: boolean;
+  method: "symlink" | "merge" | "skipped";
+  targetPath?: string;
+  geminiSettingsPath?: string;
+  error?: string;
 }
 
 export interface GeminiLinkOptions {
-	skipGitignore?: boolean;
-	isGlobal?: boolean;
+  skipGitignore?: boolean;
+  isGlobal?: boolean;
 }
 
 /**
@@ -40,41 +40,47 @@ export interface GeminiLinkOptions {
  * - Global installs: Use absolute path to ~/.claude/.mcp.json
  */
 export async function createSymlink(
-	targetPath: string,
-	linkPath: string,
-	projectDir: string,
-	isGlobal: boolean,
+  targetPath: string,
+  linkPath: string,
+  projectDir: string,
+  isGlobal: boolean,
 ): Promise<GeminiLinkResult> {
-	// Ensure parent directory exists
-	const linkDir = dirname(linkPath);
-	if (!existsSync(linkDir)) {
-		await mkdir(linkDir, { recursive: true });
-		logger.debug(`Created directory: ${linkDir}`);
-	}
+  // Ensure parent directory exists
+  const linkDir = dirname(linkPath);
+  if (!existsSync(linkDir)) {
+    await mkdir(linkDir, { recursive: true });
+    logger.debug(`Created directory: ${linkDir}`);
+  }
 
-	// Determine symlink target based on install type
-	let symlinkTarget: string;
-	if (isGlobal) {
-		// Global: ~/.gemini/settings.json → ~/.claude/.mcp.json (absolute path)
-		symlinkTarget = getGlobalMcpConfigPath();
-	} else {
-		// Local: Check if using local or global MCP config
-		const localMcpPath = join(projectDir, ".mcp.json");
-		const isLocalConfig = targetPath === localMcpPath;
-		// From .gemini/settings.json, ../.mcp.json points to project root
-		symlinkTarget = isLocalConfig ? "../.mcp.json" : targetPath;
-	}
+  // Determine symlink target based on install type
+  let symlinkTarget: string;
+  if (isGlobal) {
+    // Global: ~/.gemini/settings.json → ~/.claude/.mcp.json (absolute path)
+    symlinkTarget = getGlobalMcpConfigPath();
+  } else {
+    // Local: Check if using local or global MCP config
+    const localMcpPath = join(projectDir, ".mcp.json");
+    const isLocalConfig = targetPath === localMcpPath;
+    // From .gemini/settings.json, ../.mcp.json points to project root
+    symlinkTarget = isLocalConfig ? "../.mcp.json" : targetPath;
+  }
 
-	try {
-		await symlink(symlinkTarget, linkPath, isWindows() ? "file" : undefined);
-		logger.debug(`Created symlink: ${linkPath} → ${symlinkTarget}`);
-		return { success: true, method: "symlink", targetPath, geminiSettingsPath: linkPath };
-	} catch (error) {
-		const errorMessage = error instanceof Error ? error.message : "Unknown error";
-		return {
-			success: false,
-			method: "symlink",
-			error: `Failed to create symlink: ${errorMessage}`,
-		};
-	}
+  try {
+    await symlink(symlinkTarget, linkPath, isWindows() ? "file" : undefined);
+    logger.debug(`Created symlink: ${linkPath} → ${symlinkTarget}`);
+    return {
+      success: true,
+      method: "symlink",
+      targetPath,
+      geminiSettingsPath: linkPath,
+    };
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    return {
+      success: false,
+      method: "symlink",
+      error: `Failed to create symlink: ${errorMessage}`,
+    };
+  }
 }

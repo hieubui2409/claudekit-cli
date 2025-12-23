@@ -2,10 +2,10 @@
  * Result of a package installation operation
  */
 export interface PackageInstallResult {
-	success: boolean;
-	package: string;
-	version?: string;
-	error?: string;
+  success: boolean;
+  package: string;
+  version?: string;
+  error?: string;
 }
 
 /** Version marker for partial/interrupted installations */

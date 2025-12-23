@@ -4,62 +4,62 @@
  */
 
 export interface SkillCategoryMapping {
-	oldSkills: string[]; // Old flat skill names
-	newCategory: string; // New category directory name
+  oldSkills: string[]; // Old flat skill names
+  newCategory: string; // New category directory name
 }
 
 /**
  * Mapping of old flat skills to new categorized structure
  */
 export const SKILL_CATEGORY_MAPPINGS: SkillCategoryMapping[] = [
-	// AI & Multimodal skills
-	{
-		oldSkills: [
-			"gemini-vision",
-			"gemini-image-gen",
-			"gemini-video",
-			"gemini-thinking",
-			"gemini-files",
-		],
-		newCategory: "ai-multimodal",
-	},
+  // AI & Multimodal skills
+  {
+    oldSkills: [
+      "gemini-vision",
+      "gemini-image-gen",
+      "gemini-video",
+      "gemini-thinking",
+      "gemini-files",
+    ],
+    newCategory: "ai-multimodal",
+  },
 
-	// Database skills
-	{
-		oldSkills: ["postgresql-psql", "mongodb"],
-		newCategory: "databases",
-	},
+  // Database skills
+  {
+    oldSkills: ["postgresql-psql", "mongodb"],
+    newCategory: "databases",
+  },
 
-	// DevOps & Infrastructure
-	{
-		oldSkills: [
-			"cloudflare-dns",
-			"cloudflare-pages",
-			"cloudflare-workers",
-			"cloudflare-d1",
-			"docker",
-			"gcloud",
-		],
-		newCategory: "devops",
-	},
+  // DevOps & Infrastructure
+  {
+    oldSkills: [
+      "cloudflare-dns",
+      "cloudflare-pages",
+      "cloudflare-workers",
+      "cloudflare-d1",
+      "docker",
+      "gcloud",
+    ],
+    newCategory: "devops",
+  },
 
-	// Media Processing
-	{
-		oldSkills: ["ffmpeg", "imagemagick"],
-		newCategory: "media-processing",
-	},
+  // Media Processing
+  {
+    oldSkills: ["ffmpeg", "imagemagick"],
+    newCategory: "media-processing",
+  },
 
-	// Web Frameworks
-	{
-		oldSkills: ["nextjs", "remix-icon", "turborepo"],
-		newCategory: "web-frameworks",
-	},
+  // Web Frameworks
+  {
+    oldSkills: ["nextjs", "remix-icon", "turborepo"],
+    newCategory: "web-frameworks",
+  },
 
-	// UI & Styling
-	{
-		oldSkills: ["tailwindcss", "shadcn-ui", "canvas-design"],
-		newCategory: "ui-styling",
-	},
+  // UI & Styling
+  {
+    oldSkills: ["tailwindcss", "shadcn-ui", "canvas-design"],
+    newCategory: "ui-styling",
+  },
 ];
 
 /**
@@ -67,26 +67,26 @@ export const SKILL_CATEGORY_MAPPINGS: SkillCategoryMapping[] = [
  * These exist in both old and new structures in the same location
  */
 export const PRESERVED_SKILLS = [
-	// Core skills
-	"common",
-	"debugging",
-	"document-skills",
-	"problem-solving",
-	"sequential-thinking",
+  // Core skills
+  "common",
+  "debugging",
+  "document-skills",
+  "problem-solving",
+  "sequential-thinking",
 
-	// Development tools
-	"claude-code",
-	"better-auth",
-	"chrome-devtools",
-	"shopify",
-	"mcp-builder",
+  // Development tools
+  "claude-code",
+  "better-auth",
+  "chrome-devtools",
+  "shopify",
+  "mcp-builder",
 
-	// Utilities
-	"docs-seeker",
-	"repomix",
-	"skill-creator",
-	"template-skill",
-	"google-adk-python",
+  // Utilities
+  "docs-seeker",
+  "repomix",
+  "skill-creator",
+  "template-skill",
+  "google-adk-python",
 ];
 
 /**
@@ -96,20 +96,20 @@ export const PRESERVED_SKILLS = [
  * @returns Category name or null if preserved/unknown
  */
 export function getCategoryForSkill(skillName: string): string | null {
-	// Check if it's a preserved skill (no migration needed)
-	if (PRESERVED_SKILLS.includes(skillName)) {
-		return null;
-	}
+  // Check if it's a preserved skill (no migration needed)
+  if (PRESERVED_SKILLS.includes(skillName)) {
+    return null;
+  }
 
-	// Find in mappings
-	for (const mapping of SKILL_CATEGORY_MAPPINGS) {
-		if (mapping.oldSkills.includes(skillName)) {
-			return mapping.newCategory;
-		}
-	}
+  // Find in mappings
+  for (const mapping of SKILL_CATEGORY_MAPPINGS) {
+    if (mapping.oldSkills.includes(skillName)) {
+      return mapping.newCategory;
+    }
+  }
 
-	// Unknown skill
-	return null;
+  // Unknown skill
+  return null;
 }
 
 /**
@@ -118,7 +118,7 @@ export function getCategoryForSkill(skillName: string): string | null {
  * @returns Array of old skill names
  */
 export function getAllMigratableSkills(): string[] {
-	return SKILL_CATEGORY_MAPPINGS.flatMap((mapping) => mapping.oldSkills);
+  return SKILL_CATEGORY_MAPPINGS.flatMap((mapping) => mapping.oldSkills);
 }
 
 /**
@@ -127,7 +127,9 @@ export function getAllMigratableSkills(): string[] {
  * @returns Array of category names
  */
 export function getAllCategories(): string[] {
-	return [...new Set(SKILL_CATEGORY_MAPPINGS.map((mapping) => mapping.newCategory))];
+  return [
+    ...new Set(SKILL_CATEGORY_MAPPINGS.map((mapping) => mapping.newCategory)),
+  ];
 }
 
 /**
@@ -137,7 +139,10 @@ export function getAllCategories(): string[] {
  * @returns True if known, false otherwise
  */
 export function isKnownSkill(skillName: string): boolean {
-	return PRESERVED_SKILLS.includes(skillName) || getAllMigratableSkills().includes(skillName);
+  return (
+    PRESERVED_SKILLS.includes(skillName) ||
+    getAllMigratableSkills().includes(skillName)
+  );
 }
 
 /**
@@ -149,19 +154,19 @@ export function isKnownSkill(skillName: string): boolean {
  * @returns Object with oldPath and newPath, or null if preserved
  */
 export function getPathMapping(
-	skillName: string,
-	oldBasePath: string,
-	newBasePath: string,
+  skillName: string,
+  oldBasePath: string,
+  newBasePath: string,
 ): { oldPath: string; newPath: string } | null {
-	const category = getCategoryForSkill(skillName);
+  const category = getCategoryForSkill(skillName);
 
-	if (category === null) {
-		// Preserved skill, no path change
-		return null;
-	}
+  if (category === null) {
+    // Preserved skill, no path change
+    return null;
+  }
 
-	return {
-		oldPath: `${oldBasePath}/${skillName}`,
-		newPath: `${newBasePath}/${category}/${skillName}`,
-	};
+  return {
+    oldPath: `${oldBasePath}/${skillName}`,
+    newPath: `${newBasePath}/${category}/${skillName}`,
+  };
 }

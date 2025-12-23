@@ -42,7 +42,7 @@ export const HOME_PREFIX = IS_WINDOWS ? "%USERPROFILE%" : "$HOME";
  * @internal Exported for testing purposes
  */
 export function getHomeDirPrefix(): string {
-	return HOME_PREFIX;
+  return HOME_PREFIX;
 }
 
 /**
@@ -50,22 +50,22 @@ export function getHomeDirPrefix(): string {
  * @internal Exported for testing purposes
  */
 export function normalizePathSeparators(path: string): string {
-	if (!IS_WINDOWS) return path;
-	// Only convert forward slashes in path portions, not in URLs or protocol strings
-	return path.replace(/(?<!:)\/(?!\/)/g, "\\");
+  if (!IS_WINDOWS) return path;
+  // Only convert forward slashes in path portions, not in URLs or protocol strings
+  return path.replace(/(?<!:)\/(?!\/)/g, "\\");
 }
 
 // File extensions to transform
 const TRANSFORMABLE_EXTENSIONS = new Set([
-	".md",
-	".js",
-	".ts",
-	".json",
-	".sh",
-	".ps1",
-	".yaml",
-	".yml",
-	".toml",
+  ".md",
+  ".js",
+  ".ts",
+  ".json",
+  ".sh",
+  ".ps1",
+  ".yaml",
+  ".yml",
+  ".toml",
 ]);
 
 // Files to always transform regardless of extension
@@ -85,132 +85,146 @@ const ALWAYS_TRANSFORM_FILES = new Set(["CLAUDE.md", "claude.md"]);
  *
  * @internal Exported for testing purposes
  */
-export function transformContent(content: string): { transformed: string; changes: number } {
-	let changes = 0;
-	let transformed = content;
-	const homePrefix = getHomeDirPrefix();
-	// Always use forward slashes - they work on all platforms (Windows, Linux, macOS)
-	// This ensures consistent path format across all environments
-	const claudePath = `${homePrefix}/.claude/`;
+export function transformContent(content: string): {
+  transformed: string;
+  changes: number;
+} {
+  let changes = 0;
+  let transformed = content;
+  const homePrefix = getHomeDirPrefix();
+  // Always use forward slashes - they work on all platforms (Windows, Linux, macOS)
+  // This ensures consistent path format across all environments
+  const claudePath = `${homePrefix}/.claude/`;
 
-	// Windows-specific: Convert $HOME → %USERPROFILE% (handles content with Unix env vars)
-	if (IS_WINDOWS) {
-		// Pattern W1: $HOME/.claude/ → %USERPROFILE%/.claude/
-		transformed = transformed.replace(/\$HOME\/\.claude\//g, () => {
-			changes++;
-			return claudePath;
-		});
+  // Windows-specific: Convert $HOME → %USERPROFILE% (handles content with Unix env vars)
+  if (IS_WINDOWS) {
+    // Pattern W1: $HOME/.claude/ → %USERPROFILE%/.claude/
+    transformed = transformed.replace(/\$HOME\/\.claude\//g, () => {
+      changes++;
+      return claudePath;
+    });
 
-		// Pattern W2: ${HOME}/.claude/ → %USERPROFILE%/.claude/
-		transformed = transformed.replace(/\$\{HOME\}\/\.claude\//g, () => {
-			changes++;
-			return claudePath;
-		});
+    // Pattern W2: ${HOME}/.claude/ → %USERPROFILE%/.claude/
+    transformed = transformed.replace(/\$\{HOME\}\/\.claude\//g, () => {
+      changes++;
+      return claudePath;
+    });
 
-		// Pattern W3: Standalone $HOME → %USERPROFILE% (only when followed by path separator)
-		transformed = transformed.replace(/\$HOME(?=\/|\\)/g, () => {
-			changes++;
-			return homePrefix;
-		});
+    // Pattern W3: Standalone $HOME → %USERPROFILE% (only when followed by path separator)
+    transformed = transformed.replace(/\$HOME(?=\/|\\)/g, () => {
+      changes++;
+      return homePrefix;
+    });
 
-		// Pattern W4: ${HOME} → %USERPROFILE% (only when followed by path separator)
-		transformed = transformed.replace(/\$\{HOME\}(?=\/|\\)/g, () => {
-			changes++;
-			return homePrefix;
-		});
-	}
+    // Pattern W4: ${HOME} → %USERPROFILE% (only when followed by path separator)
+    transformed = transformed.replace(/\$\{HOME\}(?=\/|\\)/g, () => {
+      changes++;
+      return homePrefix;
+    });
+  }
 
-	// Convert $CLAUDE_PROJECT_DIR to home prefix (for global install transformation)
-	// Pattern P1: $CLAUDE_PROJECT_DIR/.claude/ → $HOME/.claude/
-	transformed = transformed.replace(/\$CLAUDE_PROJECT_DIR\/\.claude\//g, () => {
-		changes++;
-		return claudePath;
-	});
+  // Convert $CLAUDE_PROJECT_DIR to home prefix (for global install transformation)
+  // Pattern P1: $CLAUDE_PROJECT_DIR/.claude/ → $HOME/.claude/
+  transformed = transformed.replace(/\$CLAUDE_PROJECT_DIR\/\.claude\//g, () => {
+    changes++;
+    return claudePath;
+  });
 
-	// Pattern P2: "$CLAUDE_PROJECT_DIR"/.claude/ → "$HOME"/.claude/ (quoted)
-	transformed = transformed.replace(/"\$CLAUDE_PROJECT_DIR"\/\.claude\//g, () => {
-		changes++;
-		return `"${homePrefix}"/.claude/`;
-	});
+  // Pattern P2: "$CLAUDE_PROJECT_DIR"/.claude/ → "$HOME"/.claude/ (quoted)
+  transformed = transformed.replace(
+    /"\$CLAUDE_PROJECT_DIR"\/\.claude\//g,
+    () => {
+      changes++;
+      return `"${homePrefix}"/.claude/`;
+    },
+  );
 
-	// Pattern P3: ${CLAUDE_PROJECT_DIR}/.claude/ → ${HOME}/.claude/ (curly brace)
-	transformed = transformed.replace(/\$\{CLAUDE_PROJECT_DIR\}\/\.claude\//g, () => {
-		changes++;
-		return claudePath;
-	});
+  // Pattern P3: ${CLAUDE_PROJECT_DIR}/.claude/ → ${HOME}/.claude/ (curly brace)
+  transformed = transformed.replace(
+    /\$\{CLAUDE_PROJECT_DIR\}\/\.claude\//g,
+    () => {
+      changes++;
+      return claudePath;
+    },
+  );
 
-	// Windows: %CLAUDE_PROJECT_DIR% → platform-appropriate prefix
-	if (IS_WINDOWS) {
-		// Pattern W5: %CLAUDE_PROJECT_DIR%/.claude/ → %USERPROFILE%/.claude/
-		transformed = transformed.replace(/%CLAUDE_PROJECT_DIR%\/\.claude\//g, () => {
-			changes++;
-			return claudePath;
-		});
-	}
+  // Windows: %CLAUDE_PROJECT_DIR% → platform-appropriate prefix
+  if (IS_WINDOWS) {
+    // Pattern W5: %CLAUDE_PROJECT_DIR%/.claude/ → %USERPROFILE%/.claude/
+    transformed = transformed.replace(
+      /%CLAUDE_PROJECT_DIR%\/\.claude\//g,
+      () => {
+        changes++;
+        return claudePath;
+      },
+    );
+  }
 
-	// Pattern 1: ./.claude/ → $HOME/.claude/ (remove ./ prefix entirely)
-	transformed = transformed.replace(/\.\/\.claude\//g, () => {
-		changes++;
-		return claudePath;
-	});
+  // Pattern 1: ./.claude/ → $HOME/.claude/ (remove ./ prefix entirely)
+  transformed = transformed.replace(/\.\/\.claude\//g, () => {
+    changes++;
+    return claudePath;
+  });
 
-	// Pattern 1b: @./.claude/ → @$HOME/.claude/ (@ with relative path)
-	transformed = transformed.replace(/@\.\/\.claude\//g, () => {
-		changes++;
-		return `@${claudePath}`;
-	});
+  // Pattern 1b: @./.claude/ → @$HOME/.claude/ (@ with relative path)
+  transformed = transformed.replace(/@\.\/\.claude\//g, () => {
+    changes++;
+    return `@${claudePath}`;
+  });
 
-	// Pattern 2: @.claude/ → @$HOME/.claude/ (keep @ prefix)
-	transformed = transformed.replace(/@\.claude\//g, () => {
-		changes++;
-		return `@${claudePath}`;
-	});
+  // Pattern 2: @.claude/ → @$HOME/.claude/ (keep @ prefix)
+  transformed = transformed.replace(/@\.claude\//g, () => {
+    changes++;
+    return `@${claudePath}`;
+  });
 
-	// Pattern 3: Quoted paths ".claude/ or '.claude/ or `.claude/
-	transformed = transformed.replace(/(["'`])\.claude\//g, (_match, quote) => {
-		changes++;
-		return `${quote}${claudePath}`;
-	});
+  // Pattern 3: Quoted paths ".claude/ or '.claude/ or `.claude/
+  transformed = transformed.replace(/(["'`])\.claude\//g, (_match, quote) => {
+    changes++;
+    return `${quote}${claudePath}`;
+  });
 
-	// Pattern 4: Parentheses (.claude/ for markdown links
-	transformed = transformed.replace(/\(\.claude\//g, () => {
-		changes++;
-		return `(${claudePath}`;
-	});
+  // Pattern 4: Parentheses (.claude/ for markdown links
+  transformed = transformed.replace(/\(\.claude\//g, () => {
+    changes++;
+    return `(${claudePath}`;
+  });
 
-	// Pattern 5: Space prefix " .claude/" (but not already handled)
-	transformed = transformed.replace(/ \.claude\//g, () => {
-		changes++;
-		return ` ${claudePath}`;
-	});
+  // Pattern 5: Space prefix " .claude/" (but not already handled)
+  transformed = transformed.replace(/ \.claude\//g, () => {
+    changes++;
+    return ` ${claudePath}`;
+  });
 
-	// Pattern 6: Start of line ^.claude/
-	transformed = transformed.replace(/^\.claude\//gm, () => {
-		changes++;
-		return claudePath;
-	});
+  // Pattern 6: Start of line ^.claude/
+  transformed = transformed.replace(/^\.claude\//gm, () => {
+    changes++;
+    return claudePath;
+  });
 
-	// Pattern 7: After colon (YAML/JSON) : .claude/ or :.claude/
-	transformed = transformed.replace(/: \.claude\//g, () => {
-		changes++;
-		return `: ${claudePath}`;
-	});
-	transformed = transformed.replace(/:\.claude\//g, () => {
-		changes++;
-		return `:${claudePath}`;
-	});
+  // Pattern 7: After colon (YAML/JSON) : .claude/ or :.claude/
+  transformed = transformed.replace(/: \.claude\//g, () => {
+    changes++;
+    return `: ${claudePath}`;
+  });
+  transformed = transformed.replace(/:\.claude\//g, () => {
+    changes++;
+    return `:${claudePath}`;
+  });
 
-	return { transformed, changes };
+  return { transformed, changes };
 }
 
 /**
  * Check if a file should be transformed based on extension or name
  */
 function shouldTransformFile(filename: string): boolean {
-	const ext = extname(filename).toLowerCase();
-	const basename = filename.split("/").pop() || filename;
+  const ext = extname(filename).toLowerCase();
+  const basename = filename.split("/").pop() || filename;
 
-	return TRANSFORMABLE_EXTENSIONS.has(ext) || ALWAYS_TRANSFORM_FILES.has(basename);
+  return (
+    TRANSFORMABLE_EXTENSIONS.has(ext) || ALWAYS_TRANSFORM_FILES.has(basename)
+  );
 }
 
 /**
@@ -221,95 +235,98 @@ function shouldTransformFile(filename: string): boolean {
  * @returns Statistics about the transformation including files processed, transformed, and skipped
  */
 export async function transformPathsForGlobalInstall(
-	directory: string,
-	options: { verbose?: boolean } = {},
+  directory: string,
+  options: { verbose?: boolean } = {},
 ): Promise<{
-	filesTransformed: number;
-	totalChanges: number;
-	filesSkipped: number;
-	skippedFiles: Array<{ path: string; reason: string }>;
+  filesTransformed: number;
+  totalChanges: number;
+  filesSkipped: number;
+  skippedFiles: Array<{ path: string; reason: string }>;
 }> {
-	let filesTransformed = 0;
-	let totalChanges = 0;
-	let filesSkipped = 0;
-	const skippedFiles: Array<{ path: string; reason: string }> = [];
+  let filesTransformed = 0;
+  let totalChanges = 0;
+  let filesSkipped = 0;
+  const skippedFiles: Array<{ path: string; reason: string }> = [];
 
-	async function processDirectory(dir: string): Promise<void> {
-		const entries = await readdir(dir, { withFileTypes: true });
+  async function processDirectory(dir: string): Promise<void> {
+    const entries = await readdir(dir, { withFileTypes: true });
 
-		for (const entry of entries) {
-			const fullPath = join(dir, entry.name);
+    for (const entry of entries) {
+      const fullPath = join(dir, entry.name);
 
-			if (entry.isDirectory()) {
-				// Skip node_modules and hidden directories (except .claude itself)
-				// Design assumption: Archive source content should not contain nested
-				// .claude directories (e.g., example projects with their own .claude).
-				// If archives do contain nested .claude dirs, they will be skipped to
-				// avoid unintended path transformations in template/example code.
-				if (
-					entry.name === "node_modules" ||
-					(entry.name.startsWith(".") && entry.name !== ".claude")
-				) {
-					continue;
-				}
-				await processDirectory(fullPath);
-			} else if (entry.isFile() && shouldTransformFile(entry.name)) {
-				try {
-					const content = await readFile(fullPath, "utf-8");
-					const { transformed, changes } = transformContent(content);
+      if (entry.isDirectory()) {
+        // Skip node_modules and hidden directories (except .claude itself)
+        // Design assumption: Archive source content should not contain nested
+        // .claude directories (e.g., example projects with their own .claude).
+        // If archives do contain nested .claude dirs, they will be skipped to
+        // avoid unintended path transformations in template/example code.
+        if (
+          entry.name === "node_modules" ||
+          (entry.name.startsWith(".") && entry.name !== ".claude")
+        ) {
+          continue;
+        }
+        await processDirectory(fullPath);
+      } else if (entry.isFile() && shouldTransformFile(entry.name)) {
+        try {
+          const content = await readFile(fullPath, "utf-8");
+          const { transformed, changes } = transformContent(content);
 
-					if (changes > 0) {
-						await writeFile(fullPath, transformed, "utf-8");
-						filesTransformed++;
-						totalChanges += changes;
+          if (changes > 0) {
+            await writeFile(fullPath, transformed, "utf-8");
+            filesTransformed++;
+            totalChanges += changes;
 
-						if (options.verbose) {
-							logger.verbose(`Transformed ${changes} path(s) in ${fullPath}`);
-						}
-					}
-				} catch (error) {
-					// Track skipped files for reporting
-					const reason = error instanceof Error ? error.message : "unknown error";
-					filesSkipped++;
-					skippedFiles.push({ path: fullPath, reason });
+            if (options.verbose) {
+              logger.verbose(`Transformed ${changes} path(s) in ${fullPath}`);
+            }
+          }
+        } catch (error) {
+          // Track skipped files for reporting
+          const reason =
+            error instanceof Error ? error.message : "unknown error";
+          filesSkipped++;
+          skippedFiles.push({ path: fullPath, reason });
 
-					// Always log skipped files at debug level for troubleshooting
-					logger.debug(`Skipping ${fullPath}: ${reason}`);
+          // Always log skipped files at debug level for troubleshooting
+          logger.debug(`Skipping ${fullPath}: ${reason}`);
 
-					if (options.verbose) {
-						logger.verbose(`Skipping ${fullPath}: ${reason}`);
-					}
-				}
-			}
-		}
-	}
+          if (options.verbose) {
+            logger.verbose(`Skipping ${fullPath}: ${reason}`);
+          }
+        }
+      }
+    }
+  }
 
-	await processDirectory(directory);
+  await processDirectory(directory);
 
-	// Log summary if files were skipped
-	if (filesSkipped > 0 && options.verbose) {
-		logger.verbose(`Skipped ${filesSkipped} file(s) during path transformation`);
-	}
+  // Log summary if files were skipped
+  if (filesSkipped > 0 && options.verbose) {
+    logger.verbose(
+      `Skipped ${filesSkipped} file(s) during path transformation`,
+    );
+  }
 
-	return { filesTransformed, totalChanges, filesSkipped, skippedFiles };
+  return { filesTransformed, totalChanges, filesSkipped, skippedFiles };
 }
 
 /**
  * Transform a single file's content (useful for testing)
  */
 export async function transformFile(
-	filePath: string,
+  filePath: string,
 ): Promise<{ success: boolean; changes: number }> {
-	try {
-		const content = await readFile(filePath, "utf-8");
-		const { transformed, changes } = transformContent(content);
+  try {
+    const content = await readFile(filePath, "utf-8");
+    const { transformed, changes } = transformContent(content);
 
-		if (changes > 0) {
-			await writeFile(filePath, transformed, "utf-8");
-		}
+    if (changes > 0) {
+      await writeFile(filePath, transformed, "utf-8");
+    }
 
-		return { success: true, changes };
-	} catch (error) {
-		return { success: false, changes: 0 };
-	}
+    return { success: true, changes };
+  } catch (error) {
+    return { success: false, changes: 0 };
+  }
 }

@@ -7,34 +7,34 @@
 
 // Re-export all types
 export type {
-	CheckGroup,
-	CheckPriority,
-	CheckResult,
-	CheckRunnerOptions,
-	CheckStatus,
-	CheckSummary,
-	Checker,
-	DiagnosticReport,
-	ErrorDetail,
-	FixAction,
-	FixAttempt,
-	FixResult,
-	HealingSummary,
-	ReportOptions,
-	SystemInfo,
+  CheckGroup,
+  CheckPriority,
+  CheckResult,
+  CheckRunnerOptions,
+  CheckStatus,
+  CheckSummary,
+  Checker,
+  DiagnosticReport,
+  ErrorDetail,
+  FixAction,
+  FixAttempt,
+  FixResult,
+  HealingSummary,
+  ReportOptions,
+  SystemInfo,
 } from "./types.js";
 
 // Re-export Zod schemas
 export {
-	CheckGroupSchema,
-	CheckPrioritySchema,
-	CheckResultSchema,
-	CheckRunnerOptionsSchema,
-	CheckStatusSchema,
-	CheckSummarySchema,
-	FixAttemptSchema,
-	FixResultSchema,
-	HealingSummarySchema,
+  CheckGroupSchema,
+  CheckPrioritySchema,
+  CheckResultSchema,
+  CheckRunnerOptionsSchema,
+  CheckStatusSchema,
+  CheckSummarySchema,
+  FixAttemptSchema,
+  FixResultSchema,
+  HealingSummarySchema,
 } from "./types.js";
 
 // Re-export CheckRunner class

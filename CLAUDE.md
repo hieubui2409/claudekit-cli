@@ -82,11 +82,11 @@ tests/                # Additional test suites
 
 ## Platform Notes
 
-| Platform | Claude Config Path |
-|----------|-------------------|
-| Linux/macOS | `~/.claude/` or `$HOME/.claude/` |
-| Windows (PowerShell) | `%USERPROFILE%\.claude\` or `C:\Users\[USERNAME]\.claude` |
-| WSL | `/home/[username]/.claude/` (Linux filesystem, not Windows) |
+| Platform             | Claude Config Path                                          |
+| -------------------- | ----------------------------------------------------------- |
+| Linux/macOS          | `~/.claude/` or `$HOME/.claude/`                            |
+| Windows (PowerShell) | `%USERPROFILE%\.claude\` or `C:\Users\[USERNAME]\.claude`   |
+| WSL                  | `/home/[username]/.claude/` (Linux filesystem, not Windows) |
 
 **Important**: Use `$HOME` (Unix) or `%USERPROFILE%` (Windows) instead of `~` in scripts - tilde doesn't expand on Windows.
 
@@ -112,6 +112,7 @@ git push origin kai/<feature>
 ## Documentation
 
 Detailed docs in `docs/`:
+
 - `project-overview-pdr.md` - Product requirements
 - `codebase-summary.md` - Architecture overview
 - `code-standards.md` - Coding conventions

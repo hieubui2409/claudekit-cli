@@ -12,12 +12,12 @@ import { defaultTheme, getVisibleLength } from "./help-colors.js";
  * Width: 19 characters per line
  */
 export const BANNER_LINES = [
-	" ██████╗██╗  ██╗",
-	"██╔════╝██║ ██╔╝",
-	"██║     █████╔╝ ",
-	"██║     ██╔═██╗ ",
-	"╚██████╗██║  ██╗",
-	" ╚═════╝╚═╝  ╚═╝",
+  " ██████╗██╗  ██╗",
+  "██╔════╝██║ ██╔╝",
+  "██║     █████╔╝ ",
+  "██║     ██╔═██╗ ",
+  "╚██████╗██║  ██╗",
+  " ╚═════╝╚═╝  ╚═╝",
 ] as const;
 
 /** Banner width in characters */
@@ -27,7 +27,7 @@ export const BANNER_WIDTH = 16;
  * Get colored banner as multiline string
  */
 export function getBanner(): string {
-	return BANNER_LINES.map((line) => defaultTheme.banner(line)).join("\n");
+  return BANNER_LINES.map((line) => defaultTheme.banner(line)).join("\n");
 }
 
 /**
@@ -37,15 +37,17 @@ export function getBanner(): string {
  * @param width - Terminal width (default: 80)
  */
 export function getCenteredBanner(width = 80): string {
-	// Skip centering if terminal is too narrow
-	if (width < BANNER_WIDTH + 4) {
-		return getBanner();
-	}
+  // Skip centering if terminal is too narrow
+  if (width < BANNER_WIDTH + 4) {
+    return getBanner();
+  }
 
-	const padding = Math.floor((width - BANNER_WIDTH) / 2);
-	const paddingStr = " ".repeat(padding);
+  const padding = Math.floor((width - BANNER_WIDTH) / 2);
+  const paddingStr = " ".repeat(padding);
 
-	return BANNER_LINES.map((line) => paddingStr + defaultTheme.banner(line)).join("\n");
+  return BANNER_LINES.map(
+    (line) => paddingStr + defaultTheme.banner(line),
+  ).join("\n");
 }
 
 /**
@@ -55,12 +57,14 @@ export function getCenteredBanner(width = 80): string {
  * @param width - Terminal width for centering
  */
 export function getBannerWithVersion(version: string, width = 80): string {
-	const banner = getCenteredBanner(width);
-	const versionLine = defaultTheme.muted(`v${version}`);
+  const banner = getCenteredBanner(width);
+  const versionLine = defaultTheme.muted(`v${version}`);
 
-	// Center the version under the banner
-	const versionPadding = Math.floor((width - getVisibleLength(versionLine)) / 2);
-	const centeredVersion = " ".repeat(Math.max(0, versionPadding)) + versionLine;
+  // Center the version under the banner
+  const versionPadding = Math.floor(
+    (width - getVisibleLength(versionLine)) / 2,
+  );
+  const centeredVersion = " ".repeat(Math.max(0, versionPadding)) + versionLine;
 
-	return `${banner}\n${centeredVersion}`;
+  return `${banner}\n${centeredVersion}`;
 }

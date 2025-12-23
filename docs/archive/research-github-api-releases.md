@@ -22,7 +22,7 @@ const { Octokit } = require("@octokit/rest");
 
 // With authentication (recommended)
 const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN
+  auth: process.env.GITHUB_TOKEN,
 });
 
 // Get latest release
@@ -30,7 +30,7 @@ async function getLatestRelease(owner, repo) {
   try {
     const { data } = await octokit.rest.repos.getLatestRelease({
       owner,
-      repo
+      repo,
     });
 
     return {
@@ -38,11 +38,11 @@ async function getLatestRelease(owner, repo) {
       name: data.name,
       publishedAt: data.published_at,
       url: data.html_url,
-      assets: data.assets
+      assets: data.assets,
     };
   } catch (error) {
     if (error.status === 404) {
-      throw new Error('No releases found');
+      throw new Error("No releases found");
     }
     throw error;
   }
@@ -57,15 +57,15 @@ async function listReleases(owner, repo, options = {}) {
     owner,
     repo,
     per_page: options.perPage || 30,
-    page: options.page || 1
+    page: options.page || 1,
   });
 
-  return data.map(release => ({
+  return data.map((release) => ({
     version: release.tag_name,
     name: release.name,
     prerelease: release.prerelease,
     draft: release.draft,
-    publishedAt: release.published_at
+    publishedAt: release.published_at,
   }));
 }
 ```
@@ -85,32 +85,32 @@ npm install semver
 ```
 
 ```javascript
-const semver = require('semver');
+const semver = require("semver");
 
 // Basic comparison
-semver.gt('1.2.3', '1.2.0');     // true (greater than)
-semver.lt('1.2.0', '1.2.3');     // true (less than)
-semver.eq('1.2.3', '1.2.3');     // true (equal)
+semver.gt("1.2.3", "1.2.0"); // true (greater than)
+semver.lt("1.2.0", "1.2.3"); // true (less than)
+semver.eq("1.2.3", "1.2.3"); // true (equal)
 
 // Compare function (-1, 0, 1)
-semver.compare('1.2.3', '1.2.4'); // -1
-semver.compare('1.2.3', '1.2.3'); // 0
-semver.compare('1.2.4', '1.2.3'); // 1
+semver.compare("1.2.3", "1.2.4"); // -1
+semver.compare("1.2.3", "1.2.3"); // 0
+semver.compare("1.2.4", "1.2.3"); // 1
 
 // Version validation
-semver.valid('1.2.3');           // '1.2.3'
-semver.valid('not-a-version');   // null
+semver.valid("1.2.3"); // '1.2.3'
+semver.valid("not-a-version"); // null
 
 // Clean/coerce versions
-semver.clean('  =v1.2.3  ');     // '1.2.3'
-semver.coerce('v1.2.x');         // '1.2.0'
+semver.clean("  =v1.2.3  "); // '1.2.3'
+semver.coerce("v1.2.x"); // '1.2.0'
 
 // Range checking
-semver.satisfies('1.2.3', '>=1.0.0 <2.0.0'); // true
+semver.satisfies("1.2.3", ">=1.0.0 <2.0.0"); // true
 
 // Sorting
-const versions = ['1.2.3', '1.0.0', '2.1.0'];
-versions.sort(semver.compare);   // ['1.0.0', '1.2.3', '2.1.0']
+const versions = ["1.2.3", "1.0.0", "2.1.0"];
+versions.sort(semver.compare); // ['1.0.0', '1.2.3', '2.1.0']
 ```
 
 ### Option B: compare-versions (Lightweight Alternative)
@@ -122,14 +122,14 @@ npm install compare-versions
 ```
 
 ```javascript
-const { compareVersions } = require('compare-versions');
+const { compareVersions } = require("compare-versions");
 
-compareVersions('1.2.3', '1.2.4'); // -1
-compareVersions('1.2.3', '1.2.3'); // 0
-compareVersions('1.2.4', '1.2.3'); // 1
+compareVersions("1.2.3", "1.2.4"); // -1
+compareVersions("1.2.3", "1.2.3"); // 0
+compareVersions("1.2.4", "1.2.3"); // 1
 
 // Supports wildcards
-compareVersions('1.0.x', '1.0.5'); // -1
+compareVersions("1.0.x", "1.0.5"); // -1
 
 // Direct sorting
 versions.sort(compareVersions);
@@ -144,10 +144,10 @@ npm install semver-compare
 ```
 
 ```javascript
-const compare = require('semver-compare');
+const compare = require("semver-compare");
 
-compare('1.2.3', '1.2.4'); // -1
-[].sort(compare);          // Direct array sorting
+compare("1.2.3", "1.2.4"); // -1
+[].sort(compare); // Direct array sorting
 ```
 
 ### Recommendation
@@ -164,21 +164,21 @@ compare('1.2.3', '1.2.4'); // -1
 
 ### Rate Limits (2025)
 
-| Authentication Type | Requests/Hour |
-|---------------------|---------------|
-| Unauthenticated | 60 |
-| Personal Access Token | 5,000 |
-| GitHub App (standard org) | 5,000+ (scales) |
-| GitHub App (Enterprise Cloud) | 15,000 |
-| GitHub Actions `GITHUB_TOKEN` | 1,000/repo |
-| GitHub Actions (Enterprise) | 15,000 |
+| Authentication Type           | Requests/Hour   |
+| ----------------------------- | --------------- |
+| Unauthenticated               | 60              |
+| Personal Access Token         | 5,000           |
+| GitHub App (standard org)     | 5,000+ (scales) |
+| GitHub App (Enterprise Cloud) | 15,000          |
+| GitHub Actions `GITHUB_TOKEN` | 1,000/repo      |
+| GitHub Actions (Enterprise)   | 15,000          |
 
 ### Authentication Setup
 
 ```javascript
 // Method 1: Personal Access Token
 const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN
+  auth: process.env.GITHUB_TOKEN,
 });
 
 // Method 2: GitHub App
@@ -187,13 +187,13 @@ const octokit = new Octokit({
   auth: {
     appId: process.env.APP_ID,
     privateKey: process.env.PRIVATE_KEY,
-    installationId: process.env.INSTALLATION_ID
-  }
+    installationId: process.env.INSTALLATION_ID,
+  },
 });
 
 // Method 3: OAuth Token
 const octokit = new Octokit({
-  auth: oauthToken
+  auth: oauthToken,
 });
 ```
 
@@ -207,22 +207,22 @@ async function checkRateLimit(octokit) {
     limit: data.rate.limit,
     remaining: data.rate.remaining,
     reset: new Date(data.rate.reset * 1000),
-    used: data.rate.used
+    used: data.rate.used,
   };
 }
 
 // Check from response headers (preferred)
 async function makeRequestWithRateCheck(octokit) {
   const response = await octokit.rest.repos.getLatestRelease({
-    owner: 'octokit',
-    repo: 'rest.js'
+    owner: "octokit",
+    repo: "rest.js",
   });
 
   const rateInfo = {
-    limit: response.headers['x-ratelimit-limit'],
-    remaining: response.headers['x-ratelimit-remaining'],
-    reset: new Date(response.headers['x-ratelimit-reset'] * 1000),
-    used: response.headers['x-ratelimit-used']
+    limit: response.headers["x-ratelimit-limit"],
+    remaining: response.headers["x-ratelimit-remaining"],
+    reset: new Date(response.headers["x-ratelimit-reset"] * 1000),
+    used: response.headers["x-ratelimit-used"],
   };
 
   console.log(`Rate limit: ${rateInfo.remaining}/${rateInfo.limit}`);
@@ -247,17 +247,16 @@ async function fetchReleaseWithRetry(owner, repo, maxRetries = 3) {
     try {
       const { data, headers } = await octokit.rest.repos.getLatestRelease({
         owner,
-        repo
+        repo,
       });
 
       // Check rate limit
-      const remaining = parseInt(headers['x-ratelimit-remaining']);
+      const remaining = parseInt(headers["x-ratelimit-remaining"]);
       if (remaining < 10) {
         console.warn(`Low rate limit: ${remaining} requests remaining`);
       }
 
       return data;
-
     } catch (error) {
       attempt++;
 
@@ -268,10 +267,10 @@ async function fetchReleaseWithRetry(owner, repo, maxRetries = 3) {
 
       if (error.status === 403 || error.status === 429) {
         // Rate limit exceeded
-        const resetTime = error.response?.headers['x-ratelimit-reset'];
+        const resetTime = error.response?.headers["x-ratelimit-reset"];
         if (resetTime) {
-          const waitMs = (parseInt(resetTime) * 1000) - Date.now() + 1000;
-          console.log(`Rate limited. Waiting ${Math.ceil(waitMs/1000)}s...`);
+          const waitMs = parseInt(resetTime) * 1000 - Date.now() + 1000;
+          console.log(`Rate limited. Waiting ${Math.ceil(waitMs / 1000)}s...`);
           await sleep(waitMs);
           continue;
         }
@@ -280,7 +279,9 @@ async function fetchReleaseWithRetry(owner, repo, maxRetries = 3) {
       if (error.status >= 500 && attempt < maxRetries) {
         // Server error - exponential backoff
         const backoff = Math.pow(2, attempt) * 1000;
-        console.log(`Server error. Retry ${attempt}/${maxRetries} after ${backoff}ms`);
+        console.log(
+          `Server error. Retry ${attempt}/${maxRetries} after ${backoff}ms`,
+        );
         await sleep(backoff);
         continue;
       }
@@ -293,7 +294,7 @@ async function fetchReleaseWithRetry(owner, repo, maxRetries = 3) {
 }
 
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 ```
 
@@ -302,7 +303,7 @@ function sleep(ms) {
 ```javascript
 async function fetchWithTimeout(promise, timeoutMs = 10000) {
   const timeout = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error('Request timeout')), timeoutMs)
+    setTimeout(() => reject(new Error("Request timeout")), timeoutMs),
   );
 
   return Promise.race([promise, timeout]);
@@ -312,10 +313,10 @@ async function fetchWithTimeout(promise, timeoutMs = 10000) {
 try {
   const release = await fetchWithTimeout(
     octokit.rest.repos.getLatestRelease({ owner, repo }),
-    5000
+    5000,
   );
 } catch (error) {
-  console.error('Request failed:', error.message);
+  console.error("Request failed:", error.message);
 }
 ```
 
@@ -334,14 +335,14 @@ let cachedData = null;
 async function fetchReleaseWithCache(owner, repo) {
   const headers = {};
   if (cachedETag) {
-    headers['If-None-Match'] = cachedETag;
+    headers["If-None-Match"] = cachedETag;
   }
 
   try {
     const response = await octokit.rest.repos.getLatestRelease({
       owner,
       repo,
-      headers
+      headers,
     });
 
     // Update cache
@@ -349,11 +350,10 @@ async function fetchReleaseWithCache(owner, repo) {
     cachedData = response.data;
 
     return response.data;
-
   } catch (error) {
     if (error.status === 304) {
       // Not modified - use cache
-      console.log('Using cached data');
+      console.log("Using cached data");
       return cachedData;
     }
     throw error;
@@ -366,9 +366,10 @@ async function fetchReleaseWithCache(owner, repo) {
 ```javascript
 async function fetchMultipleReleases(repos) {
   const promises = repos.map(({ owner, repo }) =>
-    octokit.rest.repos.getLatestRelease({ owner, repo })
+    octokit.rest.repos
+      .getLatestRelease({ owner, repo })
       .then(({ data }) => ({ owner, repo, version: data.tag_name, data }))
-      .catch(error => ({ owner, repo, error: error.message }))
+      .catch((error) => ({ owner, repo, error: error.message })),
   );
 
   return Promise.all(promises);
@@ -376,9 +377,9 @@ async function fetchMultipleReleases(repos) {
 
 // Usage
 const releases = await fetchMultipleReleases([
-  { owner: 'nodejs', repo: 'node' },
-  { owner: 'microsoft', repo: 'vscode' },
-  { owner: 'facebook', repo: 'react' }
+  { owner: "nodejs", repo: "node" },
+  { owner: "microsoft", repo: "vscode" },
+  { owner: "facebook", repo: "react" },
 ]);
 ```
 
@@ -386,7 +387,8 @@ const releases = await fetchMultipleReleases([
 
 ```javascript
 class ReleaseCacheManager {
-  constructor(ttlMs = 5 * 60 * 1000) { // 5 min default
+  constructor(ttlMs = 5 * 60 * 1000) {
+    // 5 min default
     this.cache = new Map();
     this.ttl = ttlMs;
   }
@@ -413,7 +415,7 @@ class ReleaseCacheManager {
     const key = this.getCacheKey(owner, repo);
     this.cache.set(key, {
       data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 }
@@ -447,7 +449,7 @@ async function fetchAllReleases(owner, repo) {
       owner,
       repo,
       per_page: perPage,
-      page
+      page,
     });
 
     releases.push(...data);

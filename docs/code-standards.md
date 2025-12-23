@@ -7,11 +7,13 @@ This document defines the coding standards, conventions, and best practices for 
 ## General Principles
 
 ### Core Philosophy
+
 - **YAGNI** (You Aren't Gonna Need It): Don't implement features until they're actually needed
 - **KISS** (Keep It Simple, Stupid): Favor simplicity over complexity
 - **DRY** (Don't Repeat Yourself): Avoid code duplication through abstraction
 
 ### Code Quality Goals
+
 - Readability over cleverness
 - Type safety over dynamic typing
 - Explicit over implicit
@@ -21,6 +23,7 @@ This document defines the coding standards, conventions, and best practices for 
 ## TypeScript Standards
 
 ### Strict Mode Configuration
+
 ```typescript
 // tsconfig.json
 {
@@ -35,9 +38,13 @@ This document defines the coding standards, conventions, and best practices for 
 ```
 
 ### Type Annotations
+
 ```typescript
 // ✅ Good - Explicit return types for public functions
-export async function getToken(): Promise<{ token: string; method: AuthMethod }> {
+export async function getToken(): Promise<{
+  token: string;
+  method: AuthMethod;
+}> {
   // ...
 }
 
@@ -51,13 +58,14 @@ function processData(data: any) {
 
 // ✅ Good - Use unknown for truly unknown types
 function processData(data: unknown) {
-  if (typeof data === 'string') {
+  if (typeof data === "string") {
     // ...
   }
 }
 ```
 
 ### Interfaces vs Types
+
 ```typescript
 // ✅ Good - Use types for unions, intersections, and mapped types
 export type ArchiveType = "tar.gz" | "zip";
@@ -76,10 +84,13 @@ export type KitType = z.infer<typeof KitType>;
 ```
 
 ### Null Safety
+
 ```typescript
 // ✅ Good - Use optional chaining and nullish coalescing
 const token = process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN;
-const ghToken = execSync("gh auth token -h github.com", { encoding: "utf-8" }).trim();
+const ghToken = execSync("gh auth token -h github.com", {
+  encoding: "utf-8",
+}).trim();
 
 // ✅ Good - Explicit null checks
 if (token === null || token === undefined) {
@@ -87,7 +98,8 @@ if (token === null || token === undefined) {
 }
 
 // ❌ Bad - Implicit falsy checks
-if (!token) { // Could match empty string
+if (!token) {
+  // Could match empty string
   throw new Error("Token is required");
 }
 ```
@@ -95,6 +107,7 @@ if (!token) { // Could match empty string
 ## File Organization
 
 ### Directory Structure
+
 ```
 src/
 ├── cli/             # CLI infrastructure (config, registry, version display)
@@ -123,13 +136,16 @@ src/
 ### Modularization Standards
 
 #### File Size Limits
+
 - **Target**: <100 lines per submodule
 - **Maximum**: 200 lines (hard limit)
 - **Facades**: 50-150 lines (orchestration only)
 - If exceeding, split into smaller focused modules
 
 #### Facade Pattern
+
 Each domain exposes a facade file that:
+
 - Re-exports public API from submodules
 - Provides backward-compatible interface
 - Hides internal implementation details
@@ -142,7 +158,9 @@ export type { MergeResult, MergeOptions } from "./merger/types.js";
 ```
 
 #### Phase Handler Pattern
+
 Complex commands use orchestrator + phase handlers:
+
 - Orchestrator coordinates phases (~100 lines)
 - Each phase handles one responsibility (~50-100 lines)
 - Phases are independently testable
@@ -164,23 +182,27 @@ Complex commands use orchestrator + phase handlers:
 ```
 
 ### File Naming Conventions
+
 - Use **kebab-case** for file names: `file-scanner.ts`, `safe-prompts.ts`
 - Use **self-documenting names** that describe purpose without reading content
 - Names should tell LLMs what the file does when using Grep/Glob tools
 - Test files mirror source structure: `src/domains/config/settings-merger.ts` → `tests/lib/settings-merger.test.ts`
 
 **Good Examples:**
+
 - `conflict-resolver.ts` - Resolves merge conflicts
 - `hash-calculator.ts` - Calculates file hashes
 - `prefix-applier.ts` - Applies command prefixes
 - `migration-validator.ts` - Validates migrations
 
 **Bad Examples:**
+
 - `utils.ts` - Too generic
 - `helpers.ts` - Doesn't describe what it helps with
 - `index.ts` (for logic) - Should only re-export
 
 ### Module Organization
+
 ```typescript
 // 1. Node.js built-in imports
 import { resolve } from "node:path";
@@ -227,6 +249,7 @@ import { ConfigManager } from "../../domains/config/config-manager.js";
 ```
 
 **Available Aliases** (defined in `tsconfig.json`):
+
 - `@/*` → `src/*`
 - `@/domains/*` → `src/domains/*`
 - `@/services/*` → `src/services/*`
@@ -234,6 +257,7 @@ import { ConfigManager } from "../../domains/config/config-manager.js";
 - `@/types` → `src/types`
 
 **Import Order** (enforced by Biome linter):
+
 1. Node.js built-in imports (`node:*`)
 2. Internal imports (`@/*`) - sorted alphabetically
 3. External dependencies - sorted alphabetically
@@ -243,13 +267,18 @@ import { ConfigManager } from "../../domains/config/config-manager.js";
 ## Naming Conventions
 
 ### Variables and Functions
+
 ```typescript
 // ✅ Good - camelCase for variables and functions
 const targetDirectory = resolve(dir);
 async function downloadFile(url: string): Promise<string> {}
 
 // ✅ Good - Descriptive names
-const customClaudeFiles = await FileScanner.findCustomFiles(destDir, extractDir, ".claude");
+const customClaudeFiles = await FileScanner.findCustomFiles(
+  destDir,
+  extractDir,
+  ".claude",
+);
 
 // ❌ Bad - Abbreviations and short names
 const tgtDir = resolve(d);
@@ -257,6 +286,7 @@ async function dl(u: string): Promise<string> {}
 ```
 
 ### Classes and Types
+
 ```typescript
 // ✅ Good - PascalCase for classes, interfaces, types
 export class AuthManager {}
@@ -270,6 +300,7 @@ export class FileMerger {}
 ```
 
 ### Constants
+
 ```typescript
 // ✅ Good - UPPER_SNAKE_CASE for constants
 const MAX_EXTRACTION_SIZE = 500 * 1024 * 1024;
@@ -277,14 +308,11 @@ const SERVICE_NAME = "claudekit-cli";
 const ACCOUNT_NAME = "github-token";
 
 // ✅ Good - Readonly arrays
-export const PROTECTED_PATTERNS = [
-  ".env",
-  ".env.local",
-  "*.key",
-] as const;
+export const PROTECTED_PATTERNS = [".env", ".env.local", "*.key"] as const;
 ```
 
 ### Boolean Variables
+
 ```typescript
 // ✅ Good - Use is/has/should prefix
 const isNonInteractive = !process.stdin.isTTY;
@@ -299,12 +327,14 @@ const access = await github.checkAccess(kitConfig);
 ## Function Standards
 
 ### Function Size
+
 - Target: **<50 lines** per function
 - Maximum: **<100 lines** per function
 - Extract complex logic into helper functions
 - Use early returns to reduce nesting
 
 ### Function Design
+
 ```typescript
 // ✅ Good - Single Responsibility Principle
 async function downloadFile(url: string, destPath: string): Promise<void> {
@@ -313,8 +343,11 @@ async function downloadFile(url: string, destPath: string): Promise<void> {
   await pipeline(response.body, stream);
 }
 
-async function extractArchive(archivePath: string, destDir: string): Promise<void> {
-  if (archivePath.endsWith('.tar.gz')) {
+async function extractArchive(
+  archivePath: string,
+  destDir: string,
+): Promise<void> {
+  if (archivePath.endsWith(".tar.gz")) {
     await this.extractTarGz(archivePath, destDir);
   } else {
     await this.extractZip(archivePath, destDir);
@@ -328,6 +361,7 @@ async function downloadAndExtract(url: string, destDir: string): Promise<void> {
 ```
 
 ### Parameter Handling
+
 ```typescript
 // ✅ Good - Use options object for >3 parameters
 interface DownloadOptions {
@@ -350,18 +384,19 @@ async function downloadFile(
   size: number,
   destDir: string,
   token: string,
-  retries: number
+  retries: number,
 ): Promise<string> {}
 ```
 
 ### Error Handling
+
 ```typescript
 // ✅ Good - Explicit error types and messages
 try {
   await downloadFile(options);
 } catch (error) {
   throw new DownloadError(
-    `Failed to download ${name}: ${error instanceof Error ? error.message : "Unknown error"}`
+    `Failed to download ${name}: ${error instanceof Error ? error.message : "Unknown error"}`,
   );
 }
 
@@ -384,6 +419,7 @@ try {
 ## Class Standards
 
 ### Class Structure
+
 ```typescript
 export class DownloadManager {
   // 1. Static constants
@@ -412,6 +448,7 @@ export class DownloadManager {
 ```
 
 ### Static vs Instance Methods
+
 ```typescript
 // ✅ Good - Static for utilities that don't need instance state
 export class GitHubClient {
@@ -426,14 +463,21 @@ export class GitHubClient {
 ```
 
 ### Access Modifiers
+
 ```typescript
 // ✅ Good - Use private for internal methods
 class DownloadManager {
-  private async extractTarGz(archivePath: string, destDir: string): Promise<void> {
+  private async extractTarGz(
+    archivePath: string,
+    destDir: string,
+  ): Promise<void> {
     // Internal implementation detail
   }
 
-  public async extractArchive(archivePath: string, destDir: string): Promise<void> {
+  public async extractArchive(
+    archivePath: string,
+    destDir: string,
+  ): Promise<void> {
     // Public API
   }
 }
@@ -442,13 +486,14 @@ class DownloadManager {
 ## Error Handling
 
 ### Custom Error Classes
+
 ```typescript
 // ✅ Good - Structured error hierarchy
 export class ClaudeKitError extends Error {
   constructor(
     message: string,
     public code?: string,
-    public statusCode?: number
+    public statusCode?: number,
   ) {
     super(message);
     this.name = "ClaudeKitError";
@@ -471,6 +516,7 @@ export class DownloadError extends ClaudeKitError {
 ```
 
 ### Error Handling Patterns
+
 ```typescript
 // ✅ Good - Try-catch with specific error handling
 try {
@@ -482,7 +528,10 @@ try {
   if (error?.status === 401) {
     throw new GitHubError("Authentication failed", 401);
   }
-  throw new GitHubError(`Failed to fetch release: ${error?.message}`, error?.status);
+  throw new GitHubError(
+    `Failed to fetch release: ${error?.message}`,
+    error?.status,
+  );
 }
 
 // ✅ Good - Cleanup in finally
@@ -500,6 +549,7 @@ try {
 ## Async/Await Standards
 
 ### Promise Handling
+
 ```typescript
 // ✅ Good - Always await promises
 const release = await github.getLatestRelease(kitConfig);
@@ -516,6 +566,7 @@ github.getLatestRelease(kitConfig); // Fire and forget
 ```
 
 ### Async Function Design
+
 ```typescript
 // ✅ Good - Top-level async for commands
 export async function newCommand(options: NewCommandOptions): Promise<void> {
@@ -529,13 +580,14 @@ export async function newCommand(options: NewCommandOptions): Promise<void> {
 
 // ✅ Good - Return promises explicitly when needed
 function downloadFile(url: string): Promise<string> {
-  return fetch(url).then(res => res.text());
+  return fetch(url).then((res) => res.text());
 }
 ```
 
 ## Validation & Schemas
 
 ### Zod Schema Usage
+
 ```typescript
 // ✅ Good - Define schemas for all external inputs
 export const NewCommandOptionsSchema = z.object({
@@ -556,6 +608,7 @@ export async function newCommand(options: NewCommandOptions): Promise<void> {
 ```
 
 ### Input Validation
+
 ```typescript
 // ✅ Good - Custom validation with Zod refine
 export const ExcludePatternSchema = z
@@ -570,6 +623,7 @@ export const ExcludePatternSchema = z
 ## Security Standards
 
 ### Token Handling
+
 ```typescript
 // ✅ Good - Never log tokens directly
 logger.debug(`Token method: ${method}`); // Safe
@@ -586,6 +640,7 @@ class Logger {
 ```
 
 ### Path Validation
+
 ```typescript
 // ✅ Good - Validate paths before operations
 private isPathSafe(basePath: string, targetPath: string): boolean {
@@ -607,6 +662,7 @@ if (!this.isPathSafe(destDir, destPath)) {
 ```
 
 ### Size Limits
+
 ```typescript
 // ✅ Good - Enforce extraction limits
 private static MAX_EXTRACTION_SIZE = 500 * 1024 * 1024;
@@ -622,6 +678,7 @@ private checkExtractionSize(fileSize: number): void {
 ### Platform-Specific Path Handling
 
 #### Global Path Resolution (v1.5.1+)
+
 ```typescript
 // ✅ Good - Use centralized PathResolver for all path operations
 import { PathResolver } from "../utils/path-resolver.js";
@@ -634,7 +691,11 @@ const cacheDir = PathResolver.getCacheDir(global);
 // Component paths (agents, commands, workflows, hooks, skills)
 const skillsPath = PathResolver.buildSkillsPath(baseDir, global);
 const agentsPath = PathResolver.buildComponentPath(baseDir, "agents", global);
-const commandsPath = PathResolver.buildComponentPath(baseDir, "commands", global);
+const commandsPath = PathResolver.buildComponentPath(
+  baseDir,
+  "commands",
+  global,
+);
 
 // Directory prefix for pattern matching
 const prefix = PathResolver.getPathPrefix(global);
@@ -644,6 +705,7 @@ const globalKitDir = PathResolver.getGlobalKitDir();
 ```
 
 #### Installation Mode Detection
+
 ```typescript
 // ✅ Good - Detect installation mode from directory structure
 function detectInstallationMode(baseDir: string): boolean {
@@ -669,6 +731,7 @@ const skillsPath = PathResolver.buildSkillsPath(projectDir, isGlobal);
 ```
 
 #### Cross-Platform Path Building
+
 ```typescript
 // ✅ Good - Respect XDG environment variables on Unix
 const xdgConfigHome = process.env.XDG_CONFIG_HOME;
@@ -678,22 +741,32 @@ if (xdgConfigHome) {
 
 // ✅ Good - Windows-specific path handling with fallback
 if (platform() === "win32") {
-  const localAppData = process.env.LOCALAPPDATA || join(homedir(), "AppData", "Local");
+  const localAppData =
+    process.env.LOCALAPPDATA || join(homedir(), "AppData", "Local");
   return join(localAppData, "claude");
 }
 
 // ✅ Good - Secure directory permissions on Unix
 if (platform() !== "win32") {
-  await chmod(configDir, 0o700);  // drwx------
+  await chmod(configDir, 0o700); // drwx------
   await chmod(configFile, 0o600); // -rw-------
 }
 ```
 
 #### Path Validation and Security
+
 ```typescript
 // ✅ Good - Validate paths before operations
-function validateComponentPath(baseDir: string, component: string, global: boolean): boolean {
-  const componentPath = PathResolver.buildComponentPath(baseDir, component, global);
+function validateComponentPath(
+  baseDir: string,
+  component: string,
+  global: boolean,
+): boolean {
+  const componentPath = PathResolver.buildComponentPath(
+    baseDir,
+    component,
+    global,
+  );
   return isPathSafe(baseDir, componentPath);
 }
 
@@ -701,9 +774,15 @@ function validateComponentPath(baseDir: string, component: string, global: boole
 function validateDirectoryStructure(baseDir: string, global: boolean): boolean {
   const expectedStructure = global
     ? ["agents", "commands", "workflows", "hooks", "skills"]
-    : [".claude/agents", ".claude/commands", ".claude/workflows", ".claude/hooks", ".claude/skills"];
+    : [
+        ".claude/agents",
+        ".claude/commands",
+        ".claude/workflows",
+        ".claude/hooks",
+        ".claude/skills",
+      ];
 
-  return expectedStructure.every(path => {
+  return expectedStructure.every((path) => {
     const fullPath = join(baseDir, path);
     return existsSync(fullPath);
   });
@@ -711,6 +790,7 @@ function validateDirectoryStructure(baseDir: string, global: boolean): boolean {
 ```
 
 #### Migration and Backward Compatibility
+
 ```typescript
 // ✅ Good - Handle migration from local to global paths
 async function migrateToGlobalPaths(baseDir: string): Promise<void> {
@@ -721,7 +801,11 @@ async function migrateToGlobalPaths(baseDir: string): Promise<void> {
   const components = ["agents", "commands", "workflows", "hooks", "skills"];
   for (const component of components) {
     const localComponentPath = join(localDir, component);
-    const globalComponentPath = PathResolver.buildComponentPath(globalBaseDir, component, true);
+    const globalComponentPath = PathResolver.buildComponentPath(
+      globalBaseDir,
+      component,
+      true,
+    );
 
     if (existsSync(localComponentPath)) {
       await rename(localComponentPath, globalComponentPath);
@@ -734,29 +818,33 @@ function isLegacyLocalInstallation(baseDir: string): boolean {
   const legacyPaths = [
     join(baseDir, ".claude"),
     join(baseDir, ".claude", "skills"),
-    join(baseDir, ".claude", "agents")
+    join(baseDir, ".claude", "agents"),
   ];
 
-  return legacyPaths.some(path => existsSync(path));
+  return legacyPaths.some((path) => existsSync(path));
 }
 ```
 
 **XDG Base Directory Specification:**
+
 - Configuration: `XDG_CONFIG_HOME` (default: `~/.config`)
 - Cache: `XDG_CACHE_HOME` (default: `~/.cache`)
 - Data: `XDG_DATA_HOME` (default: `~/.local/share`)
 
 **Windows Standard Paths:**
+
 - Configuration: `%LOCALAPPDATA%` (typically `C:\Users\<user>\AppData\Local`)
 - Temp: `%TEMP%`
 
 **Path Resolution Priority:**
+
 1. **Global flag**: Use platform-specific global paths
 2. **Local mode** (default): Use `~/.claudekit/` for backward compatibility
 3. **Detection**: Auto-detect mode from existing directory structure
 4. **Fallback**: Default to local mode for new installations
 
 **❌ Anti-Patterns:**
+
 ```typescript
 // ❌ Bad - Hardcoded platform-specific paths
 const configDir = "/home/user/.config/claude"; // Won't work on Windows
@@ -781,12 +869,15 @@ const shouldInstall = await clack.confirm({
 });
 
 // ✅ Good - Skip auto-installation in non-interactive environments
-const isNonInteractive = !process.stdin.isTTY ||
+const isNonInteractive =
+  !process.stdin.isTTY ||
   process.env.CI === "true" ||
   process.env.NON_INTERACTIVE === "true";
 
 if (isNonInteractive) {
-  logger.info("Running in non-interactive mode. Skipping automatic installation.");
+  logger.info(
+    "Running in non-interactive mode. Skipping automatic installation.",
+  );
   // Provide manual instructions instead
 }
 
@@ -819,6 +910,7 @@ execAsync("curl -fsSL https://example.com/install.sh | bash"); // Risky without 
 ```
 
 **Installation Safety Rules:**
+
 1. Always require user confirmation in interactive mode
 2. Never elevate privileges automatically
 3. Provide clear descriptions of what will be installed
@@ -829,6 +921,7 @@ execAsync("curl -fsSL https://example.com/install.sh | bash"); // Risky without 
 ## Testing Standards
 
 ### Test Organization
+
 ```typescript
 // ✅ Good - Describe blocks for grouping
 describe("AuthManager", () => {
@@ -845,6 +938,7 @@ describe("AuthManager", () => {
 ```
 
 ### Test Naming
+
 ```typescript
 // ✅ Good - Descriptive test names
 test("should exclude files matching user patterns", async () => {
@@ -862,6 +956,7 @@ test("works", async () => {
 ```
 
 ### Test Structure (AAA Pattern)
+
 ```typescript
 // ✅ Good - Arrange, Act, Assert
 test("should merge files correctly", async () => {
@@ -881,6 +976,7 @@ test("should merge files correctly", async () => {
 ## Logging Standards
 
 ### Log Levels
+
 ```typescript
 // ✅ Good - Appropriate log levels
 logger.debug("Fetching release from GitHub API"); // Development info
@@ -891,6 +987,7 @@ logger.error("Authentication failed. Check your token."); // Errors
 ```
 
 ### Verbose Mode
+
 ```typescript
 // ✅ Good - Use verbose for detailed logging
 logger.verbose("GitHub API request", {
@@ -905,6 +1002,7 @@ logger.verbose("GitHub API request", {
 ## Documentation Standards
 
 ### JSDoc Comments
+
 ```typescript
 // ✅ Good - Document public APIs
 /**
@@ -926,6 +1024,7 @@ async downloadFile(params: DownloadOptions): Promise<string> {
 ```
 
 ### Code Comments
+
 ```typescript
 // ✅ Good - Explain WHY, not WHAT
 // Reset extraction size to prevent accumulation across multiple archives
@@ -942,6 +1041,7 @@ this.token = token;
 ## Performance Standards
 
 ### Memory Efficiency
+
 ```typescript
 // ✅ Good - Stream large files
 const fileStream = createWriteStream(destPath);
@@ -959,6 +1059,7 @@ await writeFile(destPath, Buffer.from(buffer));
 ```
 
 ### Parallel Operations
+
 ```typescript
 // ✅ Good - Parallel independent operations
 const [release, hasAccess] = await Promise.all([
@@ -975,6 +1076,7 @@ const archivePath = await downloadManager.downloadFile(asset);
 ## Import/Export Standards
 
 ### ESM Imports
+
 ```typescript
 // ✅ Good - Use path aliases with .js extension (ESM requirement)
 import { AuthManager } from "@/domains/github/github-auth.js";
@@ -985,6 +1087,7 @@ import type { GitHubRelease, KitConfig } from "@/types";
 ```
 
 ### Exports
+
 ```typescript
 // ✅ Good - Named exports for most cases
 export class AuthManager {}
@@ -998,6 +1101,7 @@ export default function main() {}
 ## Git Commit Standards
 
 ### Commit Message Format
+
 ```
 type(scope): subject
 
@@ -1007,6 +1111,7 @@ footer (optional)
 ```
 
 ### Types
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -1016,6 +1121,7 @@ footer (optional)
 - `chore`: Build process or auxiliary tool changes
 
 ### Examples
+
 ```
 feat(commands): add version listing command
 
@@ -1035,6 +1141,7 @@ to be decoded to prevent character encoding issues.
 ## Code Review Checklist
 
 ### Before Submitting
+
 - [ ] Code follows TypeScript strict mode
 - [ ] All functions have appropriate error handling
 - [ ] Security validations in place (path safety, size limits)
@@ -1044,6 +1151,7 @@ to be decoded to prevent character encoding issues.
 - [ ] Commit messages follow conventional format
 
 ### During Review
+
 - [ ] Code is readable and maintainable
 - [ ] No unnecessary complexity
 - [ ] Performance considerations addressed
@@ -1054,17 +1162,20 @@ to be decoded to prevent character encoding issues.
 ## Tools & Automation
 
 ### Linting
+
 ```bash
 bun run lint        # Check code quality
 bun run format      # Auto-format code
 ```
 
 ### Type Checking
+
 ```bash
 bun run typecheck   # Verify TypeScript types
 ```
 
 ### Testing
+
 ```bash
 bun test           # Run all tests
 bun test --watch   # Watch mode
@@ -1073,12 +1184,14 @@ bun test --watch   # Watch mode
 ## Continuous Improvement
 
 ### Regular Reviews
+
 - Weekly code quality reviews
 - Monthly documentation updates
 - Quarterly standards revision
 - Annual architecture assessment
 
 ### Metrics
+
 - Maintain >80% test coverage
 - Keep average file size <500 lines
 - Maintain <10% code duplication

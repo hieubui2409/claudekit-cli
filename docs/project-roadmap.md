@@ -17,10 +17,12 @@ ClaudeKit CLI (`ck`) is a command-line tool for bootstrapping and updating Claud
 ## Release Timeline
 
 ### Version 1.17.0 (Current - In Development)
+
 **Release Date**: 2025-12-21
 **Status**: IN PROGRESS
 
 #### Major Refactoring Complete
+
 - **Codebase Modularization**: Major refactor reducing 24 large files (~12,197 lines) to facades (~2,466 lines) with 122 new focused modules
 - **Facade Pattern**: All domains now expose facade files for backward compatibility
 - **Phase Handler Pattern**: Complex commands use orchestrator + phase handlers
@@ -28,6 +30,7 @@ ClaudeKit CLI (`ck`) is a command-line tool for bootstrapping and updating Claud
 - **Self-Documenting Names**: kebab-case file names describe purpose
 
 #### Modularized Components
+
 - `init.ts` → `init/` (12 modules: orchestrator + 8 phase handlers + types)
 - `new.ts` → `new/` (5 modules: orchestrator + 3 phase handlers)
 - `uninstall.ts` → `uninstall/` (5 modules: command + handlers)
@@ -42,10 +45,12 @@ ClaudeKit CLI (`ck`) is a command-line tool for bootstrapping and updating Claud
 - And 13 more domains modularized...
 
 ### Version 1.16.0 (Previous - Released)
+
 **Release Date**: 2025-11-26
 **Status**: ✅ STABLE
 
 #### Completed Features
+
 - ✅ **Init Command** (Renamed from update, deprecation warning)
 - ✅ **Fresh Installation** (--fresh flag for clean reinstall)
 - ✅ **Beta Version Support** (--beta flag for pre-releases)
@@ -59,6 +64,7 @@ ClaudeKit CLI (`ck`) is a command-line tool for bootstrapping and updating Claud
 - ✅ **Global Path Resolution** (XDG-compliant, cross-platform)
 
 ### Version 1.5.1
+
 **Release Date**: 2025-11-16
 **Status**: ✅ STABLE
 
@@ -67,17 +73,20 @@ ClaudeKit CLI (`ck`) is a command-line tool for bootstrapping and updating Claud
 - ✅ Cross-platform compatibility improvements
 
 #### Global Path Resolution Implementation (Complete ✅)
+
 **Status**: ✅ COMPLETE
 **Completion Date**: 2025-11-24
 **Code Review Score**: 9.5/10 (Excellent)
 **Test Coverage**: 625 tests passing
 
 **Problem Solved**:
+
 - CLI failed when installed globally due to hardcoded `.claude/` prefixes
 - No centralized path resolution for global vs local installation modes
 - Inconsistent directory structure handling across platforms
 
 **Implementation Details**:
+
 - **Files Updated**: 6 critical files updated to use centralized path logic
 - **New PathResolver Methods**:
   - `getPathPrefix(global)`: Returns directory prefix based on mode
@@ -88,12 +97,14 @@ ClaudeKit CLI (`ck`) is a command-line tool for bootstrapping and updating Claud
 - **Backward Compatibility**: Preserves existing local installation behavior
 
 **Quality Assurance**:
+
 - **Testing**: 625 tests passing with comprehensive coverage
 - **Code Review**: 9.5/10 rating, production-ready
 - **Security**: Proper path validation and traversal prevention
 - **Performance**: No performance impact, optimized path resolution
 
 **Global vs Local Modes**:
+
 ```
 Local Mode (Project Installation):
 /project/.claude/{agents,commands,workflows,hooks,skills}
@@ -107,10 +118,12 @@ Global Mode (Kit Installation):
 ## Feature Roadmap by Phase
 
 ### Phase 1: Core Functionality (Complete ✅)
+
 **Status**: 100% Complete
 **Completion Date**: 2025-09-xx
 
 **Features**:
+
 - ✅ Project initialization from releases
 - ✅ Multi-tier authentication
 - ✅ Streaming downloads with progress
@@ -118,6 +131,7 @@ Global Mode (Kit Installation):
 - ✅ Version listing
 
 **Quality Metrics**:
+
 - Test Coverage: 85%+
 - Code Review Score: 8.0/10+
 - Production Ready: Yes
@@ -125,10 +139,12 @@ Global Mode (Kit Installation):
 ---
 
 ### Phase 2: Advanced Features (Complete ✅)
+
 **Status**: 100% Complete
 **Completion Date**: 2025-10-xx
 
 **Features**:
+
 - ✅ Smart file conflict detection
 - ✅ Custom .claude file preservation
 - ✅ Skills directory migration (flat → categorized)
@@ -138,6 +154,7 @@ Global Mode (Kit Installation):
 - ✅ Global configuration management
 
 **Quality Metrics**:
+
 - Test Coverage: 85%+
 - Code Review Score: 8.2/10+
 - Production Ready: Yes
@@ -145,10 +162,12 @@ Global Mode (Kit Installation):
 ---
 
 ### Phase 4: Codebase Modularization (Complete ✅)
+
 **Status**: 100% Complete
 **Completion Date**: 2025-12-21
 
 **Features**:
+
 - ✅ Facade pattern for all domains
 - ✅ Phase handler pattern for complex commands
 - ✅ 200-line file size limit enforcement
@@ -158,6 +177,7 @@ Global Mode (Kit Installation):
 - ✅ All tests passing
 
 **Quality Metrics**:
+
 - Original Files: 24 large files (~12,197 lines)
 - Facade Lines: ~2,466 lines
 - New Modules: 122 focused submodules
@@ -167,22 +187,26 @@ Global Mode (Kit Installation):
 ---
 
 ### Phase 3: Diagnostics & Polish (Complete ✅)
+
 **Status**: 100% Complete
 **Completion Date**: 2025-11-16
 
 **Features**:
 
 #### 3.1 Uninstall Command (Complete ✅)
+
 **Status**: ✅ COMPLETE
 **Completion Date**: 2025-11-16
 **Code Review Score**: A+ (Excellent)
 
 **Implementation**:
+
 - Files: `src/commands/uninstall.ts` (119 lines)
 - Implementation Time: ~2 hours (as planned)
 - Code Review: Approved (No critical/high issues)
 
 **Features**:
+
 - ✅ Detects local and global `.claude` installations
 - ✅ Displays paths with clear formatting
 - ✅ Interactive confirmation required (safe default)
@@ -193,6 +217,7 @@ Global Mode (Kit Installation):
 - ✅ Validates installations have valid metadata.json
 
 **Security Features**:
+
 - User confirmation required before deletion
 - Shows paths clearly before deletion
 - No elevation/sudo required
@@ -200,6 +225,7 @@ Global Mode (Kit Installation):
 - No shell injection vectors
 
 **Quality Metrics**:
+
 - TypeScript Errors: 0
 - Linting Errors: 0
 - File Size: 119 LOC (target <500)
@@ -207,22 +233,26 @@ Global Mode (Kit Installation):
 - Platform Support: Windows, macOS, Linux ✅
 
 **Phase 4 Status**:
+
 - Unit Tests: Recommended (optional)
 - README Update: Recommended
 - Manual Testing: Pending
 
 #### 3.2 Doctor Command (Complete ✅)
+
 **Status**: ✅ COMPLETE
 **Completion Date**: 2025-11-16
 **Code Review Score**: 8.5/10 (Production-Ready)
 
 **Implementation**:
+
 - Files: `src/commands/doctor.ts` (267 lines)
 - Utils: `src/utils/dependency-checker.ts` (270 lines)
 - Utils: `src/utils/dependency-installer.ts` (350 lines)
 - Test Coverage: 50 passing tests, 324 assertions
 
 **Features**:
+
 - ✅ Checks Claude CLI installation (optional, v1.0.0+)
 - ✅ Checks Python 3.8.0+ installation
 - ✅ Checks pip installation
@@ -237,12 +267,14 @@ Global Mode (Kit Installation):
 - ✅ Reports component counts (agents, commands, workflows, skills)
 
 **Platform Support**:
+
 - ✅ Windows (PowerShell installer)
 - ✅ macOS (Homebrew, installer script)
 - ✅ Linux (apt, dnf, pacman, installer script)
 - ✅ WSL (Windows Subsystem for Linux)
 
 **Security Features**:
+
 - User confirmation required in interactive mode
 - No automatic sudo/admin elevation
 - Secure installation URLs (verified against official docs)
@@ -250,6 +282,7 @@ Global Mode (Kit Installation):
 - CI/CD safe (no prompts in non-interactive mode)
 
 **Documentation**:
+
 - ✅ README.md updated (lines 161-196)
 - ✅ docs/codebase-summary.md enhanced
 - ✅ docs/code-standards.md added security standards
@@ -257,9 +290,11 @@ Global Mode (Kit Installation):
 - ✅ Integration tests validated
 
 #### 3.3 Diagnose Command (Complete ✅)
+
 **Status**: ✅ COMPLETE
 
 **Features**:
+
 - ✅ Authentication status checking
 - ✅ GitHub access verification
 - ✅ Release availability validation
@@ -267,9 +302,11 @@ Global Mode (Kit Installation):
 - ✅ Verbose diagnostics mode
 
 #### 3.4 Binary Distribution (Complete ✅)
+
 **Status**: ✅ COMPLETE
 
 **Features**:
+
 - ✅ Cross-platform binary compilation
 - ✅ Automated release packaging
 - ✅ Platform-specific installers
@@ -277,15 +314,18 @@ Global Mode (Kit Installation):
 - ✅ GitHub Actions workflows
 
 #### 3.5 Update Notifications (Complete ✅)
+
 **Status**: ✅ COMPLETE
 
 **Features**:
+
 - ✅ Version check caching (7-day cache)
 - ✅ New version notifications
 - ✅ Cache disabling support
 - ✅ Cross-platform cache location
 
 **Quality Metrics**:
+
 - Test Coverage: 85%+
 - Code Review Score: 8.3/10+
 - Production Ready: Yes
@@ -295,17 +335,20 @@ Global Mode (Kit Installation):
 ## Quality Metrics
 
 ### Test Coverage
+
 - **Current**: 97%+ across all modules (625 tests passing)
 - **Target**: Maintain 95%+ minimum
 - **Test Suite**: 50+ integration tests for doctor command alone
 - **Global Path Resolution**: Comprehensive test coverage for new PathResolver methods
 
 ### Code Review Standards
+
 - **Target Score**: 8.0/10+
 - **Current Average**: 8.2/10
 - **Doctor Command**: 8.5/10 (Production-Ready)
 
 ### Security Standards
+
 - All dependencies verified
 - Installation URLs validated against official sources
 - User confirmation required for elevated operations
@@ -317,12 +360,14 @@ Global Mode (Kit Installation):
 ## Known Issues & Enhancements
 
 ### Completed Enhancements
+
 - ✅ Windows PowerShell installation support
 - ✅ Multi-platform package manager detection
 - ✅ Error handling for partial installations
 - ✅ WSL environment detection
 
 ### Future Enhancements (Low Priority)
+
 - Consider: Windows Package Manager (winget) support
 - Consider: Chocolatey package manager integration
 - Consider: Interactive troubleshooting guide
@@ -330,6 +375,7 @@ Global Mode (Kit Installation):
 - Consider: Network error detection & recovery
 
 ### Documentation Gaps (Closed)
+
 - ✅ Troubleshooting guide for doctor command
 - ✅ Platform-specific notes (WSL, M1 Macs)
 - ✅ Expected output examples
@@ -340,12 +386,14 @@ Global Mode (Kit Installation):
 ## Success Metrics
 
 ### User Experience
+
 - ✅ Installation time: <2 minutes from scratch
 - ✅ Error messages: Clear and actionable
 - ✅ Documentation: Comprehensive and accessible
 - ✅ CLI output: Beautiful and readable
 
 ### Reliability
+
 - ✅ Test pass rate: 100% (625/625 total tests)
 - ✅ Error handling: Graceful degradation
 - ✅ Cross-platform: All major OS supported
@@ -353,6 +401,7 @@ Global Mode (Kit Installation):
 - ✅ Global path resolution: Production-ready with 9.5/10 code review
 
 ### Maintainability
+
 - ✅ Code clarity: 8.5/10 review score
 - ✅ Type safety: Full TypeScript coverage
 - ✅ Documentation: Kept current with releases
@@ -363,12 +412,14 @@ Global Mode (Kit Installation):
 ## Dependencies & Compatibility
 
 ### Runtime Dependencies
+
 - Node.js 16.0.0+
 - Python 3.8.0+
 - npm (latest)
 - Claude CLI 1.0.0+ (optional)
 
 ### Development Dependencies
+
 - Bun 1.3.2+
 - TypeScript 5.0+
 - Biome 1.0+ (linting)
@@ -379,20 +430,24 @@ Global Mode (Kit Installation):
 ## Release History
 
 ### v1.5.1 (Current)
+
 - Release Date: 2025-11-16
 - Status: Stable
 - Changes: Bug fixes, version pinning, doctor command completion
 
 ### v1.5.0
+
 - Release Date: 2025-11-xx
 - Status: Stable
 - Changes: Doctor command, diagnostics, update notifications
 
 ### v1.4.x
+
 - Status: Previous stable
 - Changes: Skills migration, file merging enhancements
 
 ### v1.0.0 - v1.3.x
+
 - Status: Legacy (still supported)
 - Changes: Initial releases through feature maturity
 
@@ -401,12 +456,14 @@ Global Mode (Kit Installation):
 ## Maintenance Schedule
 
 ### Regular Tasks
+
 - **Weekly**: Monitor GitHub issues and PRs
 - **Monthly**: Dependency updates and security patches
 - **Quarterly**: Major feature review and planning
 - **As Needed**: Hotfixes for critical issues
 
 ### Documentation Updates
+
 - Update roadmap after each major release
 - Update changelog for all notable changes
 - Keep code examples current
@@ -425,16 +482,16 @@ Global Mode (Kit Installation):
 
 ## Project Completion Status
 
-| Category | Status | Completion % | Last Updated |
-|----------|--------|--------------|--------------|
-| Core Features | Complete | 100% | 2025-11-26 |
-| Advanced Features | Complete | 100% | 2025-11-26 |
-| Diagnostics | Complete | 100% | 2025-11-26 |
-| Testing | Complete | 100% | 2025-11-26 |
-| Documentation | Complete | 100% | 2025-12-21 |
-| Code Quality | Complete | 100% | 2025-11-26 |
-| **Modularization** | **Complete** | **100%** | **2025-12-21** |
-| **OVERALL** | **PRODUCTION READY** | **100%** | **2025-12-21** |
+| Category           | Status               | Completion % | Last Updated   |
+| ------------------ | -------------------- | ------------ | -------------- |
+| Core Features      | Complete             | 100%         | 2025-11-26     |
+| Advanced Features  | Complete             | 100%         | 2025-11-26     |
+| Diagnostics        | Complete             | 100%         | 2025-11-26     |
+| Testing            | Complete             | 100%         | 2025-11-26     |
+| Documentation      | Complete             | 100%         | 2025-12-21     |
+| Code Quality       | Complete             | 100%         | 2025-11-26     |
+| **Modularization** | **Complete**         | **100%**     | **2025-12-21** |
+| **OVERALL**        | **PRODUCTION READY** | **100%**     | **2025-12-21** |
 
 ---
 

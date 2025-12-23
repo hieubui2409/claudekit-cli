@@ -11,7 +11,7 @@ export const VERSION_PATTERN = /^v?\d+\.\d+\.\d+/;
  * @returns true if valid semantic version format
  */
 export function isValidVersionFormat(version: string): boolean {
-	return VERSION_PATTERN.test(version.trim());
+  return VERSION_PATTERN.test(version.trim());
 }
 
 /**
@@ -20,6 +20,6 @@ export function isValidVersionFormat(version: string): boolean {
  * @returns Version with 'v' prefix
  */
 export function normalizeVersionTag(version: string): string {
-	const trimmed = version.trim();
-	return trimmed.startsWith("v") ? trimmed : `v${trimmed}`;
+  const trimmed = version.trim();
+  return trimmed.startsWith("v") ? trimmed : `v${trimmed}`;
 }

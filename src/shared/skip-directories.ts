@@ -11,15 +11,15 @@
  * Build artifacts and package directories to skip
  */
 export const BUILD_ARTIFACT_DIRS: readonly string[] = [
-	"node_modules",
-	".venv",
-	"venv",
-	".test-venv",
-	"__pycache__",
-	".git",
-	".svn",
-	"dist",
-	"build",
+  "node_modules",
+  ".venv",
+  "venv",
+  ".test-venv",
+  "__pycache__",
+  ".git",
+  ".svn",
+  "dist",
+  "build",
 ];
 
 /**
@@ -27,15 +27,15 @@ export const BUILD_ARTIFACT_DIRS: readonly string[] = [
  * These are managed by Claude Code itself, not ClaudeKit
  */
 export const CLAUDE_CODE_INTERNAL_DIRS: readonly string[] = [
-	"debug",
-	"projects",
-	"shell-snapshots",
-	"file-history",
-	"todos",
-	"session-env",
-	"statsig",
-	"telemetry",
-	".anthropic",
+  "debug",
+  "projects",
+  "shell-snapshots",
+  "file-history",
+  "todos",
+  "session-env",
+  "statsig",
+  "telemetry",
+  ".anthropic",
 ];
 
 /**
@@ -43,8 +43,8 @@ export const CLAUDE_CODE_INTERNAL_DIRS: readonly string[] = [
  * Use this for general file operations that scan entire directories
  */
 export const SKIP_DIRS_ALL: readonly string[] = [
-	...BUILD_ARTIFACT_DIRS,
-	...CLAUDE_CODE_INTERNAL_DIRS,
+  ...BUILD_ARTIFACT_DIRS,
+  ...CLAUDE_CODE_INTERNAL_DIRS,
 ];
 
 /**

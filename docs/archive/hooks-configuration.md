@@ -15,6 +15,7 @@ Claude Code hooks are event-driven scripts that execute at specific points in th
 **Purpose:** Automatically check for ClaudeKit updates when a new session starts.
 
 **Configuration:**
+
 ```json
 {
   "hooks": {
@@ -33,6 +34,7 @@ Claude Code hooks are event-driven scripts that execute at specific points in th
 ```
 
 **Behavior:**
+
 - Runs `node .claude/version-check.js` when Claude Code session starts
 - Compares current ClaudeKit version with latest GitHub release
 - Displays notification if update available
@@ -46,6 +48,7 @@ Claude Code hooks are event-driven scripts that execute at specific points in th
 **Purpose:** Automatically explain version check output to users after the command runs.
 
 **Configuration:**
+
 ```json
 {
   "hooks": {
@@ -68,6 +71,7 @@ Claude Code hooks are event-driven scripts that execute at specific points in th
 ```
 
 **Behavior:**
+
 - Triggers after any Bash command executes (`PostToolUse` event)
 - Filters for commands containing "version-check"
 - Outputs explanation to stderr (visible to user but doesn't interfere with command output)
@@ -89,6 +93,7 @@ Prompt-based hooks are limited to specific events (`PreToolUse`, `Stop`, `Subage
 **Purpose:** Automatically review large files and suggest modularization strategies.
 
 **Configuration:**
+
 ```json
 {
   "hooks": {
@@ -108,6 +113,7 @@ Prompt-based hooks are limited to specific events (`PreToolUse`, `Stop`, `Subage
 ```
 
 **Behavior:**
+
 - Triggers after Write tool executes
 - Uses LLM (prompt-based hook) to analyze file size and complexity
 - Suggests modularization if file exceeds 200 lines of code
@@ -119,11 +125,13 @@ Prompt-based hooks are limited to specific events (`PreToolUse`, `Stop`, `Subage
 ### Command Hooks
 
 Execute bash commands with access to hook context variables:
+
 - `$TOOL_INPUT` - The input provided to the tool
 - `$TOOL_OUTPUT` - The output from the tool (PostToolUse only)
 - `$TOOL_NAME` - Name of the tool that was executed
 
 **Best for:**
+
 - Deterministic checks (syntax validation, path checking)
 - System commands and scripts
 - Fast, predictable operations
@@ -133,17 +141,20 @@ Execute bash commands with access to hook context variables:
 Query an LLM for context-aware decision-making:
 
 **Available events:**
+
 - `PreToolUse` - Before tool execution
 - `Stop` - When main agent finishes
 - `SubagentStop` - When subagents complete
 - `UserPromptSubmit` - When users submit prompts
 
 **Best for:**
+
 - Complex criteria requiring natural language understanding
 - Nuanced judgments about code quality
 - Context-aware evaluations
 
 **Not suitable for:**
+
 - Explaining command output (use PostToolUse command hooks instead)
 - Events outside the supported list above
 
@@ -152,11 +163,13 @@ Query an LLM for context-aware decision-making:
 ### Version Check Hook Not Running
 
 1. **Check cache age:** Cache may be fresh (<7 days old)
+
    ```bash
    cat ~/.claudekit/cache/version-check.json
    ```
 
 2. **Clear cache to force refresh:**
+
    ```bash
    rm ~/.claudekit/cache/version-check.json
    ```

@@ -7,8 +7,12 @@
  * @example operationError("Checksum calculation", "file.txt", "ENOENT")
  *          → "Checksum calculation failed for 'file.txt': ENOENT"
  */
-export function operationError(operation: string, subject: string, details: string): string {
-	return `${operation} failed for '${subject}': ${details}`;
+export function operationError(
+  operation: string,
+  subject: string,
+  details: string,
+): string {
+  return `${operation} failed for '${subject}': ${details}`;
 }
 
 /**
@@ -16,8 +20,14 @@ export function operationError(operation: string, subject: string, details: stri
  * @example notFoundError("Command", "python", "check PATH")
  *          → "Command not found: python (check PATH)"
  */
-export function notFoundError(type: string, name: string, hint?: string): string {
-	return hint ? `${type} not found: ${name} (${hint})` : `${type} not found: ${name}`;
+export function notFoundError(
+  type: string,
+  name: string,
+  hint?: string,
+): string {
+  return hint
+    ? `${type} not found: ${name} (${hint})`
+    : `${type} not found: ${name}`;
 }
 
 /**
@@ -26,7 +36,7 @@ export function notFoundError(type: string, name: string, hint?: string): string
  *          → "Invalid path: must be absolute"
  */
 export function validationError(field: string, issue: string): string {
-	return `Invalid ${field}: ${issue}`;
+  return `Invalid ${field}: ${issue}`;
 }
 
 /**
@@ -35,5 +45,5 @@ export function validationError(field: string, issue: string): string {
  *          → "Security violation (path traversal): '../etc/passwd'"
  */
 export function securityError(type: string, details: string): string {
-	return `Security violation (${type}): '${details}'`;
+  return `Security violation (${type}): '${details}'`;
 }

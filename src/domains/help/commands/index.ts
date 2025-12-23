@@ -11,7 +11,7 @@ export { uninstallCommandHelp } from "./uninstall-command-help.js";
 export { updateCommandHelp } from "./update-command-help.js";
 export { versionsCommandHelp } from "./versions-command-help.js";
 export {
-	projectOptionsGroup,
-	filterOptionsGroup,
-	folderOptionsGroup,
+  projectOptionsGroup,
+  filterOptionsGroup,
+  folderOptionsGroup,
 } from "./common-options.js";

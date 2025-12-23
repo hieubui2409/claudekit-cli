@@ -21,6 +21,7 @@ ClaudeKit CLI (`ck`) is a command-line tool designed to streamline the bootstrap
 ### Problem Statement
 
 Developers purchasing ClaudeKit starter kits need an efficient way to:
+
 - Bootstrap new projects from private GitHub releases
 - Update existing projects with new versions while preserving customizations
 - Manage authentication securely across multiple platforms
@@ -30,6 +31,7 @@ Developers purchasing ClaudeKit starter kits need an efficient way to:
 ### Solution
 
 ClaudeKit CLI provides a comprehensive solution with:
+
 - Multi-tier authentication fallback system
 - Smart file merging with conflict detection
 - Protected file patterns to preserve user customizations
@@ -41,6 +43,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 ## Target Users
 
 ### Primary Users
+
 1. **Professional Developers**: Purchasing ClaudeKit kits for production projects
 2. **Engineering Teams**: Using ClaudeKit for collaborative development
 3. **Solo Developers**: Building projects with Claude Code assistance
@@ -49,16 +52,19 @@ ClaudeKit CLI provides a comprehensive solution with:
 ### User Personas
 
 #### Persona 1: Professional Full-Stack Developer
+
 - **Needs**: Fast project setup, version control integration, team collaboration
 - **Pain Points**: Manual project configuration, dependency management
 - **Goals**: Focus on feature development rather than boilerplate setup
 
 #### Persona 2: DevOps Engineer
+
 - **Needs**: Automated deployment, CI/CD integration, non-interactive mode
 - **Pain Points**: Manual environment setup, inconsistent configurations
 - **Goals**: Streamlined automated project initialization
 
 #### Persona 3: Indie Developer
+
 - **Needs**: Quick prototyping, latest features, community templates
 - **Pain Points**: Time-consuming setup, outdated templates
 - **Goals**: Launch projects rapidly with best practices
@@ -68,6 +74,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 ### 1. Project Initialization (`ck new`)
 
 #### Functional Requirements
+
 - Create new projects from GitHub releases
 - Interactive kit selection (engineer, marketing)
 - Directory validation and conflict handling
@@ -76,12 +83,14 @@ ClaudeKit CLI provides a comprehensive solution with:
 - Exclude pattern support
 
 #### Non-Functional Requirements
+
 - Response time: <5s for release fetch
 - Download progress visibility
 - Graceful error handling
 - Clear success/failure messaging
 
 #### Acceptance Criteria
+
 - User can create project in empty directory without confirmation
 - User receives warning for non-empty directories
 - Custom exclude patterns are respected
@@ -91,6 +100,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 ### 2. Project Updates (`ck update`)
 
 #### Functional Requirements
+
 - Update existing projects to new versions
 - Preserve custom .claude files
 - Detect and protect user modifications
@@ -102,6 +112,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 - Backup creation with rollback capability
 
 #### Non-Functional Requirements
+
 - Preservation accuracy: 100% for protected patterns
 - Conflict detection: <1s for typical projects
 - Memory efficient merging
@@ -109,6 +120,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 - Migration safety: Backup before migration, rollback on failure
 
 #### Acceptance Criteria
+
 - Protected files are never overwritten
 - Custom .claude files are preserved
 - User confirms before any overwrites
@@ -120,6 +132,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 ### 3. Version Management (`ck versions`)
 
 #### Functional Requirements
+
 - List all available releases for kits
 - Filter by specific kit type
 - Display release metadata (date, assets, status)
@@ -128,12 +141,14 @@ ClaudeKit CLI provides a comprehensive solution with:
 - Parallel fetching for multiple kits
 
 #### Non-Functional Requirements
+
 - Fetch time: <3s for 30 releases
 - Formatted output with relative dates
 - Clear release status indicators
 - Responsive pagination
 
 #### Acceptance Criteria
+
 - All releases are fetched correctly
 - Metadata is displayed accurately
 - Filtering works as expected
@@ -142,6 +157,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 ### 4. Authentication System
 
 #### Functional Requirements
+
 - Multi-tier authentication fallback:
   1. GitHub CLI integration
   2. Environment variable support
@@ -153,12 +169,14 @@ ClaudeKit CLI provides a comprehensive solution with:
 - Token sanitization in logs
 
 #### Non-Functional Requirements
+
 - Security: No token exposure in logs
 - Reliability: Fallback always available
 - Performance: <1s authentication check
 - Cross-platform keychain support
 
 #### Acceptance Criteria
+
 - All authentication methods work correctly
 - Tokens are stored securely
 - Fallback chain executes properly
@@ -168,6 +186,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 ### 5. Download Management
 
 #### Functional Requirements
+
 - Streaming downloads with progress tracking
 - Support for TAR.GZ and ZIP archives
 - Authenticated GitHub API requests
@@ -179,12 +198,14 @@ ClaudeKit CLI provides a comprehensive solution with:
 - Exclude pattern application
 
 #### Non-Functional Requirements
+
 - Memory efficiency: Streaming (no buffering)
 - Progress accuracy: ±1% of actual
 - Download speed: Network limited
 - Temporary file cleanup guaranteed
 
 #### Acceptance Criteria
+
 - Downloads complete successfully
 - Progress bars are accurate
 - Fallbacks work correctly
@@ -194,6 +215,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 ### 6. Extraction & Merging
 
 #### Functional Requirements
+
 - Safe archive extraction
 - Path traversal prevention
 - Archive bomb detection
@@ -203,12 +225,14 @@ ClaudeKit CLI provides a comprehensive solution with:
 - Protected file preservation
 
 #### Non-Functional Requirements
+
 - Security: 100% path traversal prevention
 - Size limit: 500MB extraction maximum
 - Performance: <5s for typical archives
 - Safety: No data loss on errors
 
 #### Acceptance Criteria
+
 - Archives extract correctly
 - Malicious paths are rejected
 - Size limits are enforced
@@ -218,6 +242,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 ### 7. Skills Migration System
 
 #### Functional Requirements
+
 - Manifest generation with `.skills-manifest.json`
 - Structure detection (flat vs categorized)
 - Manifest-based detection with heuristic fallback
@@ -229,6 +254,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 - Preservation of all customizations
 
 #### Non-Functional Requirements
+
 - Detection accuracy: 100% via manifest
 - Fallback reliability: Heuristic detection for legacy installs
 - Migration safety: Zero data loss guarantee
@@ -236,6 +262,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 - Backup compression: Efficient storage
 
 #### Acceptance Criteria
+
 - Manifest generated after successful update
 - Flat → categorized migration detected correctly
 - User prompted before migration in interactive mode
@@ -248,6 +275,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 ### 8. Interactive Setup Wizard (`ck init` post-install)
 
 #### Functional Requirements
+
 - Prompt for essential config values after initialization
 - Generate `.env` file with validated inputs
 - Support both global and local installation modes
@@ -256,11 +284,13 @@ ClaudeKit CLI provides a comprehensive solution with:
 - `--skip-setup` flag to bypass wizard
 
 #### Non-Functional Requirements
+
 - Response time: <60 seconds for complete setup
 - Validation: API key format checking (Gemini, Discord, Telegram)
 - Security: Masked input for sensitive values
 
 #### Acceptance Criteria
+
 - Wizard runs when `.env` missing and interactive
 - Wizard skips in CI/non-interactive mode
 - Existing `.env` preserves user config
@@ -272,11 +302,13 @@ ClaudeKit CLI provides a comprehensive solution with:
 ## Technical Requirements
 
 ### Platform Support
+
 - **Operating Systems**: macOS (arm64, x64), Linux (x64), Windows (x64)
 - **Node.js**: Compatible with Node.js LTS
 - **Bun**: >=1.0.0 required for development
 
 ### Performance Targets
+
 - Project creation: <30s for typical kit
 - Update check: <5s
 - Authentication: <1s
@@ -284,6 +316,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 - Memory usage: <100MB during operations
 
 ### Security Requirements
+
 - Token encryption in keychain
 - Path traversal prevention
 - Archive bomb detection
@@ -292,6 +325,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 - Token format validation
 
 ### Compatibility Requirements
+
 - Cross-platform binary support
 - CI/CD environment compatibility
 - Non-TTY environment support
@@ -300,6 +334,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 ## User Experience Requirements
 
 ### Interactive Mode
+
 - Beautiful CLI interface using @clack/prompts
 - Clear progress indicators
 - Informative error messages
@@ -307,6 +342,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 - Next steps guidance
 
 ### Non-Interactive Mode
+
 - Full functionality via flags
 - CI/CD environment detection
 - Proper exit codes
@@ -314,6 +350,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 - No blocking prompts
 
 ### Error Handling
+
 - User-friendly error messages
 - Actionable error guidance
 - Detailed errors in verbose mode
@@ -323,6 +360,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 ## Quality Standards
 
 ### Code Quality
+
 - TypeScript strict mode
 - 100% type coverage
 - Zod schema validation
@@ -330,6 +368,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 - Comprehensive error types
 
 ### Testing Requirements
+
 - Unit test coverage: >80%
 - Integration tests for all commands
 - End-to-end tests for critical flows
@@ -337,6 +376,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 - Cross-platform testing
 
 ### Documentation Requirements
+
 - Comprehensive README
 - API documentation
 - Code comments for complex logic
@@ -346,18 +386,21 @@ ClaudeKit CLI provides a comprehensive solution with:
 ## Success Metrics
 
 ### Adoption Metrics
+
 - NPM downloads per month
 - GitHub stars and forks
 - Issue resolution rate
 - Community contributions
 
 ### Performance Metrics
+
 - Average project creation time
 - Download success rate
 - Authentication success rate
 - Error rate by operation type
 
 ### Quality Metrics
+
 - Test coverage percentage
 - Bug report frequency
 - User satisfaction score
@@ -366,6 +409,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 ## Product Roadmap
 
 ### Phase 1: Core Functionality (Completed)
+
 - ✅ Project creation command
 - ✅ Project update command
 - ✅ Multi-tier authentication
@@ -374,6 +418,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 - ✅ Basic documentation
 
 ### Phase 2: Enhanced Features (Completed)
+
 - ✅ Version listing command
 - ✅ Exclude patterns
 - ✅ Custom .claude file preservation
@@ -382,6 +427,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 - ✅ Skills migration infrastructure
 
 ### Phase 3: Quality & Polish (Current)
+
 - ✅ Comprehensive testing
 - ✅ Security hardening
 - ✅ Performance optimization
@@ -391,6 +437,7 @@ ClaudeKit CLI provides a comprehensive solution with:
 - 🔄 User feedback integration
 
 ### Phase 4: Future Enhancements (Planned)
+
 - 📋 Marketing kit support
 - 📋 Diff preview before merge
 - 📋 Update notifications
@@ -400,17 +447,20 @@ ClaudeKit CLI provides a comprehensive solution with:
 ## Dependencies & Integrations
 
 ### Required Services
+
 - **GitHub API**: Release and repository management
 - **npm Registry**: Package distribution
 - **GitHub CLI**: Required for authentication
 
 ### External Dependencies
+
 - @octokit/rest: GitHub API client
 - @clack/prompts: Interactive CLI
 - cac: CLI framework
 - zod: Schema validation
 
 ### Required Tools
+
 - GitHub CLI (`gh`): Required for authentication
 - Discord Webhooks: Release notifications
 - Environment variables: Configuration
@@ -418,17 +468,20 @@ ClaudeKit CLI provides a comprehensive solution with:
 ## Risk Assessment
 
 ### Technical Risks
+
 - **GitHub API rate limits**: Mitigated by caching and efficient requests
 - **Keychain compatibility**: Fallback to file-based storage
 - **Binary distribution size**: Optimized compilation and compression
 - **Cross-platform bugs**: Extensive testing on all platforms
 
 ### Operational Risks
+
 - **Private repository access**: Clear documentation on token requirements
 - **Breaking changes**: Semantic versioning and changelog
 - **Support burden**: Comprehensive documentation and examples
 
 ### Security Risks
+
 - **Token exposure**: Sanitization and secure storage
 - **Path traversal**: Validation and safe path handling
 - **Malicious archives**: Size limits and content validation
@@ -436,18 +489,21 @@ ClaudeKit CLI provides a comprehensive solution with:
 ## Compliance & Legal
 
 ### License
+
 - MIT License for maximum flexibility
 - No warranty disclaimer
 - Attribution requirements
 - Commercial use allowed
 
 ### Data Privacy
+
 - No personal data collection
 - Tokens stored locally only
 - No telemetry or analytics
 - User control over credentials
 
 ### Security Standards
+
 - OWASP security guidelines
 - Secure coding practices
 - Regular dependency updates
@@ -456,18 +512,21 @@ ClaudeKit CLI provides a comprehensive solution with:
 ## Support & Maintenance
 
 ### User Support
+
 - GitHub Issues for bug reports
 - GitHub Discussions for questions
 - Documentation for common issues
 - Example repository
 
 ### Maintenance Plan
+
 - Regular dependency updates
 - Security patch releases
 - Feature releases (semantic versioning)
 - Deprecation notices (6-month minimum)
 
 ### Community Guidelines
+
 - Code of conduct
 - Contribution guidelines
 - Issue templates
@@ -476,12 +535,14 @@ ClaudeKit CLI provides a comprehensive solution with:
 ## Constraints & Assumptions
 
 ### Constraints
+
 - Requires GitHub token with repo scope
 - Requires purchased ClaudeKit kit
 - Internet connection required
 - Minimum 100MB free disk space
 
 ### Assumptions
+
 - Users have basic CLI knowledge
 - Users have Git understanding
 - Users have npm/bun installed
@@ -492,21 +553,25 @@ ClaudeKit CLI provides a comprehensive solution with:
 ### Appendix A: Command Reference
 
 #### ck new
+
 ```bash
 ck new [--dir <directory>] [--kit <kit>] [--version <version>] [--force] [--exclude <pattern>] [--verbose]
 ```
 
 #### ck update (init)
+
 ```bash
 ck init [--dir <directory>] [--kit <kit>] [--version <version>] [--exclude <pattern>] [--global] [--verbose]
 ```
 
 #### ck versions
+
 ```bash
 ck versions [--kit <kit>] [--limit <number>] [--all] [--verbose]
 ```
 
 #### ck doctor
+
 ```bash
 ck doctor                    # Interactive mode with auto-installation
 CI=true ck doctor           # Non-interactive mode (CI/CD safe)
@@ -514,6 +579,7 @@ NON_INTERACTIVE=1 ck doctor # Non-interactive mode alternative
 ```
 
 **Features:**
+
 - Checks system dependencies (Claude CLI, Python 3.8+, pip, Node.js 16+, npm)
 - Auto-detects OS and package managers
 - Offers interactive installation with confirmation
@@ -523,6 +589,7 @@ NON_INTERACTIVE=1 ck doctor # Non-interactive mode alternative
 - CI/CD safe (no prompts in non-interactive mode)
 
 #### ck diagnose
+
 ```bash
 ck diagnose [--verbose]     # Check authentication and access
 ```
@@ -567,6 +634,7 @@ dist/**, build/**
 ## Version History
 
 ### v1.17.0 (Current)
+
 - Major codebase modularization refactor
 - Facade pattern for all domains
 - Phase handler pattern for complex commands
@@ -576,6 +644,7 @@ dist/**, build/**
 - Backward compatibility maintained
 
 ### v1.16.0
+
 - Init command (renamed from update with deprecation warning)
 - Fresh installation mode (--fresh flag)
 - Beta version support (--beta flag)
@@ -587,16 +656,19 @@ dist/**, build/**
 - Uninstall command
 
 ### v1.5.1
+
 - Fixed Windows compatibility issues
 - Improved CI/CD integration
 - Enhanced error handling
 
 ### v1.5.0
+
 - Added version listing command
 - Improved binary distribution
 - Enhanced documentation
 
 ### v1.0.0
+
 - Initial release
 - Core create and update commands
 - Multi-tier authentication

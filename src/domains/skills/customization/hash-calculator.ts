@@ -10,26 +10,30 @@ import { join, relative } from "node:path";
  * @returns Array of file paths
  */
 export async function getAllFiles(dirPath: string): Promise<string[]> {
-	const files: string[] = [];
-	const entries = await readdir(dirPath, { withFileTypes: true });
+  const files: string[] = [];
+  const entries = await readdir(dirPath, { withFileTypes: true });
 
-	for (const entry of entries) {
-		const fullPath = join(dirPath, entry.name);
+  for (const entry of entries) {
+    const fullPath = join(dirPath, entry.name);
 
-		// Skip hidden files, node_modules, and symlinks
-		if (entry.name.startsWith(".") || entry.name === "node_modules" || entry.isSymbolicLink()) {
-			continue;
-		}
+    // Skip hidden files, node_modules, and symlinks
+    if (
+      entry.name.startsWith(".") ||
+      entry.name === "node_modules" ||
+      entry.isSymbolicLink()
+    ) {
+      continue;
+    }
 
-		if (entry.isDirectory()) {
-			const subFiles = await getAllFiles(fullPath);
-			files.push(...subFiles);
-		} else if (entry.isFile()) {
-			files.push(fullPath);
-		}
-	}
+    if (entry.isDirectory()) {
+      const subFiles = await getAllFiles(fullPath);
+      files.push(...subFiles);
+    } else if (entry.isFile()) {
+      files.push(fullPath);
+    }
+  }
 
-	return files;
+  return files;
 }
 
 /**
@@ -39,19 +43,19 @@ export async function getAllFiles(dirPath: string): Promise<string[]> {
  * @returns SHA-256 hash
  */
 export async function hashFile(filePath: string): Promise<string> {
-	return new Promise((resolve, reject) => {
-		const hash = createHash("sha256");
-		const stream = createReadStream(filePath);
+  return new Promise((resolve, reject) => {
+    const hash = createHash("sha256");
+    const stream = createReadStream(filePath);
 
-		stream.on("data", (chunk) => hash.update(chunk));
-		stream.on("end", () => {
-			resolve(hash.digest("hex"));
-		});
-		stream.on("error", (error) => {
-			stream.destroy(); // Only needed in error handler for cleanup
-			reject(error);
-		});
-	});
+    stream.on("data", (chunk) => hash.update(chunk));
+    stream.on("end", () => {
+      resolve(hash.digest("hex"));
+    });
+    stream.on("error", (error) => {
+      stream.destroy(); // Only needed in error handler for cleanup
+      reject(error);
+    });
+  });
 }
 
 /**
@@ -61,19 +65,19 @@ export async function hashFile(filePath: string): Promise<string> {
  * @returns SHA-256 hash
  */
 export async function hashDirectory(dirPath: string): Promise<string> {
-	const hash = createHash("sha256");
-	const files = await getAllFiles(dirPath);
+  const hash = createHash("sha256");
+  const files = await getAllFiles(dirPath);
 
-	// Sort for consistent hashing
-	files.sort();
+  // Sort for consistent hashing
+  files.sort();
 
-	for (const file of files) {
-		const relativePath = relative(dirPath, file);
-		const content = await readFile(file);
+  for (const file of files) {
+    const relativePath = relative(dirPath, file);
+    const content = await readFile(file);
 
-		hash.update(relativePath);
-		hash.update(content);
-	}
+    hash.update(relativePath);
+    hash.update(content);
+  }
 
-	return hash.digest("hex");
+  return hash.digest("hex");
 }

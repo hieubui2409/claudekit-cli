@@ -62,4 +62,3 @@ jobs:
           echo "⚠️ Claude Code Review failed, but continuing workflow"
           echo "This may be due to Claude reporting errors during analysis"
           echo "Check the previous step logs for detailed review results"
-

@@ -5,6 +5,7 @@
 The following secrets must be configured in the GitHub repository settings for successful releases:
 
 ### NPM_TOKEN
+
 - **Purpose**: Authentication for GitHub Packages npm registry
 - **Format**: GitHub Personal Access Token with `write:packages` scope
 - **How to generate**:
@@ -15,12 +16,14 @@ The following secrets must be configured in the GitHub repository settings for s
   3. Add the token to repository secrets as `NPM_TOKEN`
 
 ### GITHUB_TOKEN
+
 - **Purpose**: Automatic authentication for GitHub API
 - **Source**: Automatically provided by GitHub Actions
 - **Permissions**: Contents, Issues, Pull Requests, ID Token
 - **Note**: This token is automatically available and doesn't need to be configured
 
 ### DISCORD_WEBHOOK_URL (Optional)
+
 - **Purpose**: Discord notifications for releases
 - **Format**: Discord webhook URL
 - **Optional**: Yes - notifications will be skipped if not configured
@@ -42,6 +45,7 @@ This project publishes to GitHub Packages using the following configuration:
 ### .npmrc Configuration
 
 The `.npmrc` file should contain:
+
 ```
 @mrgoonie:registry=https://npm.pkg.github.com
 //npm.pkg.github.com/:_authToken=${NPM_TOKEN}
@@ -50,6 +54,7 @@ The `.npmrc` file should contain:
 ### package.json Configuration
 
 Key settings in `package.json`:
+
 ```json
 {
   "name": "@mrgoonie/claudekit-cli",
@@ -137,6 +142,7 @@ If migrating from public npm to GitHub Packages:
 ## Support
 
 For deployment issues:
+
 1. Check GitHub Actions logs
 2. Review this documentation
 3. Create an issue in the repository

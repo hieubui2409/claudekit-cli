@@ -18,6 +18,7 @@ The `ck doctor` command is a comprehensive system dependency checker and install
 ## Implementation Details
 
 ### Core Files
+
 ```
 src/commands/doctor.ts (267 lines)
 ├── Main command implementation
@@ -42,6 +43,7 @@ src/utils/dependency-installer.ts (350 lines)
 ```
 
 ### Test Files
+
 ```
 tests/commands/doctor.test.ts
 ├── 25+ test cases
@@ -66,6 +68,7 @@ tests/utils/dependency-installer.test.ts
 ```
 
 **Test Statistics**:
+
 - Total Tests: 50+
 - Total Assertions: 324+
 - Pass Rate: 100% (50/50)
@@ -76,11 +79,13 @@ tests/utils/dependency-installer.test.ts
 ## Features Delivered
 
 ### 1. Dependency Checking ✅
+
 ```bash
 ck doctor
 ```
 
 **Checks**:
+
 - ✅ Claude CLI (optional, v1.0.0+) - from `code.claude.com`
 - ✅ Python (required, v3.8.0+)
 - ✅ pip (required, any version)
@@ -88,6 +93,7 @@ ck doctor
 - ✅ npm (required, any version)
 
 **Implementation**:
+
 - Semantic version comparison
 - Multi-variant command support (python/python3, pip/pip3)
 - Location detection and reporting
@@ -96,17 +102,20 @@ ck doctor
 ### 2. Auto-Installation ✅
 
 **Interactive Mode**:
+
 ```bash
 ck doctor  # Shows missing deps and prompts to install
 ```
 
 **Non-Interactive Mode**:
+
 ```bash
 CI=true ck doctor       # Shows status only
 NON_INTERACTIVE=1 ck doctor
 ```
 
 **Safety Features**:
+
 - User confirmation required before installation
 - Clear description of what will be installed
 - No automatic sudo/admin elevation
@@ -116,20 +125,24 @@ NON_INTERACTIVE=1 ck doctor
 ### 3. Platform Support ✅
 
 **macOS**:
+
 - ✅ Homebrew (brew install)
 - ✅ Installer script (curl | bash)
 
 **Linux**:
+
 - ✅ apt (Debian/Ubuntu)
 - ✅ dnf (Fedora/RHEL)
 - ✅ pacman (Arch)
 - ✅ Installer script fallback
 
 **Windows**:
+
 - ✅ PowerShell installer script
 - ✅ Manual CMD/PowerShell instructions
 
 **WSL**:
+
 - ✅ Detected and handled
 - ✅ Uses Linux package managers
 - ✅ WSL distro name reported
@@ -137,16 +150,19 @@ NON_INTERACTIVE=1 ck doctor
 ### 4. ClaudeKit Setup Overview ✅
 
 **Global Setup Display**:
+
 - Path to global `.claude` directory
 - Installation status
 - Component counts
 
 **Project Setup Display**:
+
 - Path to project `.claude` directory
 - Installation status
 - Component counts (agents, commands, workflows, skills)
 
 **Output**:
+
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Global ClaudeKit Setup
@@ -163,12 +179,14 @@ Skills: 12
 ### 5. Error Handling ✅
 
 **Graceful Degradation**:
+
 - Installation failures don't block feedback
 - Manual instructions always provided
 - Clear error messages
 - Helpful next steps
 
 **Edge Cases**:
+
 - Partial installations (e.g., Python without pip)
 - Missing package managers
 - Network failures
@@ -180,6 +198,7 @@ Skills: 12
 ## Verification & Testing
 
 ### Code Review Results
+
 - **Score**: 8.5/10 (Production-Ready)
 - **Type Safety**: Full TypeScript coverage ✅
 - **Error Handling**: Comprehensive ✅
@@ -188,6 +207,7 @@ Skills: 12
 - **Security**: Verified (user confirmation, no auto-sudo) ✅
 
 ### Test Results
+
 ```
 ✅ 50/50 tests passing
 ✅ 324 assertions passed
@@ -197,6 +217,7 @@ Skills: 12
 ```
 
 ### Security Verification
+
 - ✅ Installation URLs validated against official docs (code.claude.com)
 - ✅ No hardcoded credentials
 - ✅ User confirmation required for installations
@@ -205,6 +226,7 @@ Skills: 12
 - ✅ CI/CD safe (respects non-interactive flags)
 
 ### Cross-Platform Testing
+
 - ✅ Windows (PowerShell)
 - ✅ macOS (Homebrew, Intel & M1)
 - ✅ Linux (Multiple distros: Ubuntu, Fedora, Arch)
@@ -215,9 +237,11 @@ Skills: 12
 ## Documentation Updates
 
 ### 1. README.md
+
 **Lines 161-196**: Enhanced "Diagnostics & Doctor" section
 
 **Added**:
+
 - Command usage examples (interactive & non-interactive)
 - Complete dependency list with versions
 - Platform support matrix
@@ -225,7 +249,9 @@ Skills: 12
 - Troubleshooting reference
 
 ### 2. docs/codebase-summary.md
+
 **Added**:
+
 - Command description update
 - Implementation file documentation
 - Feature list (10 items)
@@ -233,7 +259,9 @@ Skills: 12
 - Technical architecture
 
 ### 3. docs/code-standards.md
+
 **Added**:
+
 - "Dependency Installation Security" section
 - 6 installation safety rules
 - Good vs bad practice examples
@@ -241,14 +269,18 @@ Skills: 12
 - Manual instruction patterns
 
 ### 4. docs/project-overview-pdr.md
+
 **Added**:
+
 - Doctor command in Phase 3 roadmap
 - Comprehensive command reference
 - Usage examples
 - Feature summary
 
 ### 5. docs/project-roadmap.md (NEW)
+
 **Created**: Comprehensive roadmap document
+
 - Release timeline
 - Feature roadmap by phase
 - Quality metrics
@@ -260,6 +292,7 @@ Skills: 12
 ## Key Achievements
 
 ### Functionality
+
 1. ✅ Detects all required system dependencies
 2. ✅ Reports version mismatches clearly
 3. ✅ Offers interactive installation with confirmation
@@ -270,6 +303,7 @@ Skills: 12
 8. ✅ Cross-platform support
 
 ### Quality
+
 1. ✅ 50 passing integration tests
 2. ✅ 324 assertions validated
 3. ✅ Code review score: 8.5/10
@@ -279,6 +313,7 @@ Skills: 12
 7. ✅ Production-ready code
 
 ### Documentation
+
 1. ✅ User-facing documentation (README)
 2. ✅ Developer documentation (codebase summary)
 3. ✅ Security standards documented
@@ -287,6 +322,7 @@ Skills: 12
 6. ✅ All examples verified and accurate
 
 ### Security
+
 1. ✅ User confirmation required
 2. ✅ No automatic sudo/admin
 3. ✅ Verified installation URLs
@@ -298,24 +334,24 @@ Skills: 12
 
 ## Acceptance Criteria Met
 
-| Criterion | Status | Evidence |
-|-----------|--------|----------|
-| Checks Claude CLI | ✅ | src/commands/doctor.ts:27-28 |
-| Checks Python | ✅ | src/commands/doctor.ts:27-28 |
-| Checks pip | ✅ | src/commands/doctor.ts:27-28 |
-| Checks Node.js | ✅ | src/commands/doctor.ts:27-28 |
-| Checks npm | ✅ | src/commands/doctor.ts:27-28 |
-| Auto-detects OS | ✅ | dependency-installer.ts:detectOS() |
-| Detects pkg managers | ✅ | dependency-installer.ts:detectOS() |
-| Interactive installation | ✅ | doctor.ts:60+ |
-| Manual instructions | ✅ | dependency-installer.ts:getManualInstructions() |
-| Non-interactive mode | ✅ | doctor.ts:16-20 |
-| Cross-platform | ✅ | Tests cover Windows, macOS, Linux, WSL |
-| ClaudeKit setup | ✅ | doctor.ts:100+ |
-| Component counts | ✅ | claudekit-scanner.ts |
-| 50+ tests | ✅ | 50 passing tests |
-| Code review 8.5/10 | ✅ | Code review completed |
-| No blocking issues | ✅ | All tests passing |
+| Criterion                | Status | Evidence                                        |
+| ------------------------ | ------ | ----------------------------------------------- |
+| Checks Claude CLI        | ✅     | src/commands/doctor.ts:27-28                    |
+| Checks Python            | ✅     | src/commands/doctor.ts:27-28                    |
+| Checks pip               | ✅     | src/commands/doctor.ts:27-28                    |
+| Checks Node.js           | ✅     | src/commands/doctor.ts:27-28                    |
+| Checks npm               | ✅     | src/commands/doctor.ts:27-28                    |
+| Auto-detects OS          | ✅     | dependency-installer.ts:detectOS()              |
+| Detects pkg managers     | ✅     | dependency-installer.ts:detectOS()              |
+| Interactive installation | ✅     | doctor.ts:60+                                   |
+| Manual instructions      | ✅     | dependency-installer.ts:getManualInstructions() |
+| Non-interactive mode     | ✅     | doctor.ts:16-20                                 |
+| Cross-platform           | ✅     | Tests cover Windows, macOS, Linux, WSL          |
+| ClaudeKit setup          | ✅     | doctor.ts:100+                                  |
+| Component counts         | ✅     | claudekit-scanner.ts                            |
+| 50+ tests                | ✅     | 50 passing tests                                |
+| Code review 8.5/10       | ✅     | Code review completed                           |
+| No blocking issues       | ✅     | All tests passing                               |
 
 ---
 
@@ -331,6 +367,7 @@ Skills: 12
 ## Future Enhancement Recommendations
 
 ### Optional (Low Priority)
+
 1. **Windows winget/chocolatey support**
    - Would reduce Windows manual installation steps
    - Estimated effort: 2-3 hours
@@ -352,6 +389,7 @@ Skills: 12
    - Impact: Medium (edge case)
 
 ### Not Recommended
+
 - Automatic sudo elevation (security risk)
 - Silent installations (UX concern)
 - Version-locking (dependencies update frequently)
@@ -361,6 +399,7 @@ Skills: 12
 ## Risk Assessment
 
 ### Identified Risks
+
 1. **Network Connectivity**: Installation URLs may be unreachable
    - Mitigation: Manual instructions provided
    - Severity: Low (fallback available)
@@ -374,6 +413,7 @@ Skills: 12
    - Severity: Low (tested on major platforms)
 
 ### Risk Mitigation Status
+
 - ✅ All critical risks mitigated
 - ✅ Graceful error handling implemented
 - ✅ Manual fallback always available
@@ -384,6 +424,7 @@ Skills: 12
 ## Integration Points
 
 ### Integrated With
+
 1. ✅ Main CLI entry point (`src/index.ts`)
 2. ✅ Command registry
 3. ✅ Logger utility
@@ -391,6 +432,7 @@ Skills: 12
 5. ✅ Error handling
 
 ### Compatible With
+
 1. ✅ `ck new` - users get doctor recommendation
 2. ✅ `ck init` - users get doctor recommendation
 3. ✅ `ck diagnose` - complementary diagnostics
@@ -400,17 +442,17 @@ Skills: 12
 
 ## Statistics
 
-| Metric | Value |
-|--------|-------|
-| Lines of Code (Implementation) | 887 |
-| Lines of Code (Tests) | 400+ |
-| Test Cases | 50+ |
-| Assertions | 324+ |
-| Code Review Score | 8.5/10 |
-| Test Pass Rate | 100% |
-| Documentation Updates | 5 files |
-| Lines Added | 400+ |
-| Platform Support | 4 (Win, Mac, Linux, WSL) |
+| Metric                         | Value                    |
+| ------------------------------ | ------------------------ |
+| Lines of Code (Implementation) | 887                      |
+| Lines of Code (Tests)          | 400+                     |
+| Test Cases                     | 50+                      |
+| Assertions                     | 324+                     |
+| Code Review Score              | 8.5/10                   |
+| Test Pass Rate                 | 100%                     |
+| Documentation Updates          | 5 files                  |
+| Lines Added                    | 400+                     |
+| Platform Support               | 4 (Win, Mac, Linux, WSL) |
 
 ---
 

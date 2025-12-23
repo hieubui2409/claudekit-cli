@@ -34,120 +34,122 @@ import { validatePath } from "./prefix-utils.js";
  * - Rolls back on failure
  */
 export async function applyPrefix(extractDir: string): Promise<void> {
-	// Validate input to prevent security vulnerabilities
-	validatePath(extractDir, "extractDir");
+  // Validate input to prevent security vulnerabilities
+  validatePath(extractDir, "extractDir");
 
-	const commandsDir = join(extractDir, ".claude", "commands");
+  const commandsDir = join(extractDir, ".claude", "commands");
 
-	// Check if commands directory exists
-	if (!(await pathExists(commandsDir))) {
-		logger.verbose("No commands directory found, skipping prefix application");
-		return;
-	}
+  // Check if commands directory exists
+  if (!(await pathExists(commandsDir))) {
+    logger.verbose("No commands directory found, skipping prefix application");
+    return;
+  }
 
-	logger.info("Applying /ck: prefix to slash commands...");
+  logger.info("Applying /ck: prefix to slash commands...");
 
-	const backupDir = join(extractDir, ".commands-backup");
-	const tempDir = join(extractDir, ".commands-prefix-temp");
+  const backupDir = join(extractDir, ".commands-backup");
+  const tempDir = join(extractDir, ".commands-prefix-temp");
 
-	try {
-		// Check if directory is empty
-		const entries = await readdir(commandsDir);
-		if (entries.length === 0) {
-			logger.verbose("Commands directory is empty, skipping prefix application");
-			return;
-		}
+  try {
+    // Check if directory is empty
+    const entries = await readdir(commandsDir);
+    if (entries.length === 0) {
+      logger.verbose(
+        "Commands directory is empty, skipping prefix application",
+      );
+      return;
+    }
 
-		// Check if already prefixed (ck subdirectory exists and is the only entry)
-		if (entries.length === 1 && entries[0] === "ck") {
-			const ckDir = join(commandsDir, "ck");
-			const ckStat = await stat(ckDir);
-			if (ckStat.isDirectory()) {
-				logger.verbose("Commands already have /ck: prefix, skipping");
-				return;
-			}
-		}
+    // Check if already prefixed (ck subdirectory exists and is the only entry)
+    if (entries.length === 1 && entries[0] === "ck") {
+      const ckDir = join(commandsDir, "ck");
+      const ckStat = await stat(ckDir);
+      if (ckStat.isDirectory()) {
+        logger.verbose("Commands already have /ck: prefix, skipping");
+        return;
+      }
+    }
 
-		// Create backup before destructive operations
-		await copy(commandsDir, backupDir);
-		logger.verbose("Created backup of commands directory");
+    // Create backup before destructive operations
+    await copy(commandsDir, backupDir);
+    logger.verbose("Created backup of commands directory");
 
-		// Create temporary directory for reorganization
-		await mkdir(tempDir, { recursive: true });
+    // Create temporary directory for reorganization
+    await mkdir(tempDir, { recursive: true });
 
-		// Create ck subdirectory in temp
-		const ckDir = join(tempDir, "ck");
-		await mkdir(ckDir, { recursive: true });
+    // Create ck subdirectory in temp
+    const ckDir = join(tempDir, "ck");
+    await mkdir(ckDir, { recursive: true });
 
-		// Move all current commands to ck subdirectory
-		let processedCount = 0;
-		for (const entry of entries) {
-			const sourcePath = join(commandsDir, entry);
+    // Move all current commands to ck subdirectory
+    let processedCount = 0;
+    for (const entry of entries) {
+      const sourcePath = join(commandsDir, entry);
 
-			// Security: Check if entry is a symlink and skip it
-			const stats = await lstat(sourcePath);
-			if (stats.isSymbolicLink()) {
-				logger.warning(`Skipping symlink for security: ${entry}`);
-				continue;
-			}
+      // Security: Check if entry is a symlink and skip it
+      const stats = await lstat(sourcePath);
+      if (stats.isSymbolicLink()) {
+        logger.warning(`Skipping symlink for security: ${entry}`);
+        continue;
+      }
 
-			const destPath = join(ckDir, entry);
+      const destPath = join(ckDir, entry);
 
-			// Copy the file/directory to the new location
-			await copy(sourcePath, destPath, {
-				overwrite: false,
-				errorOnExist: true,
-			});
+      // Copy the file/directory to the new location
+      await copy(sourcePath, destPath, {
+        overwrite: false,
+        errorOnExist: true,
+      });
 
-			processedCount++;
-			logger.verbose(`Moved ${entry} to ck/${entry}`);
-		}
+      processedCount++;
+      logger.verbose(`Moved ${entry} to ck/${entry}`);
+    }
 
-		if (processedCount === 0) {
-			logger.warning("No files to move (all were symlinks or invalid)");
-			await remove(backupDir);
-			await remove(tempDir);
-			return;
-		}
+    if (processedCount === 0) {
+      logger.warning("No files to move (all were symlinks or invalid)");
+      await remove(backupDir);
+      await remove(tempDir);
+      return;
+    }
 
-		// Remove old commands directory
-		await remove(commandsDir);
+    // Remove old commands directory
+    await remove(commandsDir);
 
-		// Move reorganized directory to commands location
-		await move(tempDir, commandsDir);
+    // Move reorganized directory to commands location
+    await move(tempDir, commandsDir);
 
-		// Cleanup backup after successful operation
-		await remove(backupDir);
+    // Cleanup backup after successful operation
+    await remove(backupDir);
 
-		logger.success("Successfully applied /ck: prefix to all commands");
-	} catch (error) {
-		// Restore backup if exists
-		if (await pathExists(backupDir)) {
-			try {
-				await remove(commandsDir).catch(() => {});
-				await move(backupDir, commandsDir);
-				logger.info("Restored original commands directory from backup");
-			} catch (rollbackError) {
-				logger.error(`Rollback failed: ${rollbackError}`);
-			}
-		}
+    logger.success("Successfully applied /ck: prefix to all commands");
+  } catch (error) {
+    // Restore backup if exists
+    if (await pathExists(backupDir)) {
+      try {
+        await remove(commandsDir).catch(() => {});
+        await move(backupDir, commandsDir);
+        logger.info("Restored original commands directory from backup");
+      } catch (rollbackError) {
+        logger.error(`Rollback failed: ${rollbackError}`);
+      }
+    }
 
-		// Cleanup temp directory
-		if (await pathExists(tempDir)) {
-			await remove(tempDir).catch(() => {
-				// Silent cleanup failure
-			});
-		}
+    // Cleanup temp directory
+    if (await pathExists(tempDir)) {
+      await remove(tempDir).catch(() => {
+        // Silent cleanup failure
+      });
+    }
 
-		logger.error("Failed to apply /ck: prefix to commands");
-		throw error;
-	} finally {
-		// Always cleanup backup and temp directories
-		if (await pathExists(backupDir)) {
-			await remove(backupDir).catch(() => {});
-		}
-		if (await pathExists(tempDir)) {
-			await remove(tempDir).catch(() => {});
-		}
-	}
+    logger.error("Failed to apply /ck: prefix to commands");
+    throw error;
+  } finally {
+    // Always cleanup backup and temp directories
+    if (await pathExists(backupDir)) {
+      await remove(backupDir).catch(() => {});
+    }
+    if (await pathExists(tempDir)) {
+      await remove(tempDir).catch(() => {});
+    }
+  }
 }

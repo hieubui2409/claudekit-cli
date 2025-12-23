@@ -4,7 +4,7 @@ on:
   workflow_call:
     outputs:
       artifact-name:
-        description: 'Name of the artifacts uploaded'
+        description: "Name of the artifacts uploaded"
         value: ${{ jobs.build.outputs.artifact-name }}
 
 jobs:
@@ -22,7 +22,7 @@ jobs:
             platform: darwin
             arch: arm64
             binary: ck-darwin-arm64
-          - os: macos-latest  # Intel macOS
+          - os: macos-latest # Intel macOS
             platform: darwin
             arch: x64
             binary: ck-darwin-x64

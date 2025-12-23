@@ -21,46 +21,48 @@ export type ExclusionFilter = (filePath: string) => boolean;
  * @param sizeTracker - Optional extraction size tracker for archive bomb protection
  */
 export async function moveDirectoryContents(
-	sourceDir: string,
-	destDir: string,
-	shouldExclude: ExclusionFilter,
-	sizeTracker?: ExtractionSizeTracker,
+  sourceDir: string,
+  destDir: string,
+  shouldExclude: ExclusionFilter,
+  sizeTracker?: ExtractionSizeTracker,
 ): Promise<void> {
-	await mkdir(destDir, { recursive: true });
+  await mkdir(destDir, { recursive: true });
 
-	const entries = await readdir(sourceDir, { encoding: "utf8" });
+  const entries = await readdir(sourceDir, { encoding: "utf8" });
 
-	for (const entry of entries) {
-		const sourcePath = join(sourceDir, entry);
-		const destPath = join(destDir, entry);
-		const relativePath = relative(sourceDir, sourcePath);
+  for (const entry of entries) {
+    const sourcePath = join(sourceDir, entry);
+    const destPath = join(destDir, entry);
+    const relativePath = relative(sourceDir, sourcePath);
 
-		// Validate path safety (prevent path traversal)
-		if (!isPathSafe(destDir, destPath)) {
-			logger.warning(`Skipping unsafe path: ${relativePath}`);
-			throw new ExtractionError(`Path traversal attempt detected: ${relativePath}`);
-		}
+    // Validate path safety (prevent path traversal)
+    if (!isPathSafe(destDir, destPath)) {
+      logger.warning(`Skipping unsafe path: ${relativePath}`);
+      throw new ExtractionError(
+        `Path traversal attempt detected: ${relativePath}`,
+      );
+    }
 
-		// Skip excluded files
-		if (shouldExclude(relativePath)) {
-			logger.debug(`Excluding: ${relativePath}`);
-			continue;
-		}
+    // Skip excluded files
+    if (shouldExclude(relativePath)) {
+      logger.debug(`Excluding: ${relativePath}`);
+      continue;
+    }
 
-		const entryStat = await stat(sourcePath);
+    const entryStat = await stat(sourcePath);
 
-		if (entryStat.isDirectory()) {
-			// Recursively copy directory
-			await copyDirectory(sourcePath, destPath, shouldExclude, sizeTracker);
-		} else {
-			// Track file size and check limit
-			if (sizeTracker) {
-				sizeTracker.checkExtractionSize(entryStat.size);
-			}
-			// Copy file
-			await copyFile(sourcePath, destPath);
-		}
-	}
+    if (entryStat.isDirectory()) {
+      // Recursively copy directory
+      await copyDirectory(sourcePath, destPath, shouldExclude, sizeTracker);
+    } else {
+      // Track file size and check limit
+      if (sizeTracker) {
+        sizeTracker.checkExtractionSize(entryStat.size);
+      }
+      // Copy file
+      await copyFile(sourcePath, destPath);
+    }
+  }
 }
 
 /**
@@ -71,44 +73,46 @@ export async function moveDirectoryContents(
  * @param sizeTracker - Optional extraction size tracker for archive bomb protection
  */
 export async function copyDirectory(
-	sourceDir: string,
-	destDir: string,
-	shouldExclude: ExclusionFilter,
-	sizeTracker?: ExtractionSizeTracker,
+  sourceDir: string,
+  destDir: string,
+  shouldExclude: ExclusionFilter,
+  sizeTracker?: ExtractionSizeTracker,
 ): Promise<void> {
-	await mkdir(destDir, { recursive: true });
+  await mkdir(destDir, { recursive: true });
 
-	const entries = await readdir(sourceDir, { encoding: "utf8" });
+  const entries = await readdir(sourceDir, { encoding: "utf8" });
 
-	for (const entry of entries) {
-		const sourcePath = join(sourceDir, entry);
-		const destPath = join(destDir, entry);
-		const relativePath = relative(sourceDir, sourcePath);
+  for (const entry of entries) {
+    const sourcePath = join(sourceDir, entry);
+    const destPath = join(destDir, entry);
+    const relativePath = relative(sourceDir, sourcePath);
 
-		// Validate path safety (prevent path traversal)
-		if (!isPathSafe(destDir, destPath)) {
-			logger.warning(`Skipping unsafe path: ${relativePath}`);
-			throw new ExtractionError(`Path traversal attempt detected: ${relativePath}`);
-		}
+    // Validate path safety (prevent path traversal)
+    if (!isPathSafe(destDir, destPath)) {
+      logger.warning(`Skipping unsafe path: ${relativePath}`);
+      throw new ExtractionError(
+        `Path traversal attempt detected: ${relativePath}`,
+      );
+    }
 
-		// Skip excluded files
-		if (shouldExclude(relativePath)) {
-			logger.debug(`Excluding: ${relativePath}`);
-			continue;
-		}
+    // Skip excluded files
+    if (shouldExclude(relativePath)) {
+      logger.debug(`Excluding: ${relativePath}`);
+      continue;
+    }
 
-		const entryStat = await stat(sourcePath);
+    const entryStat = await stat(sourcePath);
 
-		if (entryStat.isDirectory()) {
-			// Recursively copy directory
-			await copyDirectory(sourcePath, destPath, shouldExclude, sizeTracker);
-		} else {
-			// Track file size and check limit
-			if (sizeTracker) {
-				sizeTracker.checkExtractionSize(entryStat.size);
-			}
-			// Copy file
-			await copyFile(sourcePath, destPath);
-		}
-	}
+    if (entryStat.isDirectory()) {
+      // Recursively copy directory
+      await copyDirectory(sourcePath, destPath, shouldExclude, sizeTracker);
+    } else {
+      // Track file size and check limit
+      if (sizeTracker) {
+        sizeTracker.checkExtractionSize(entryStat.size);
+      }
+      // Copy file
+      await copyFile(sourcePath, destPath);
+    }
+  }
 }

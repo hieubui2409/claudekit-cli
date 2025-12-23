@@ -11,69 +11,85 @@ import { generateSkillMappings } from "./dependency-detector.js";
  * @returns Detection result or null if manifests not found
  */
 export async function detectViaManifest(
-	oldSkillsDir: string,
-	currentSkillsDir: string,
+  oldSkillsDir: string,
+  currentSkillsDir: string,
 ): Promise<MigrationDetectionResult | null> {
-	// Read manifests
-	const newManifest = await SkillsManifestManager.readManifest(oldSkillsDir);
-	const currentManifest = await SkillsManifestManager.readManifest(currentSkillsDir);
+  // Read manifests
+  const newManifest = await SkillsManifestManager.readManifest(oldSkillsDir);
+  const currentManifest =
+    await SkillsManifestManager.readManifest(currentSkillsDir);
 
-	// Need at least new manifest to proceed
-	if (!newManifest) {
-		return null;
-	}
+  // Need at least new manifest to proceed
+  if (!newManifest) {
+    return null;
+  }
 
-	// If no current manifest, this might be old installation
-	if (!currentManifest) {
-		// Generate manifest for current directory to detect structure
-		try {
-			const generatedManifest = await SkillsManifestManager.generateManifest(currentSkillsDir);
+  // If no current manifest, this might be old installation
+  if (!currentManifest) {
+    // Generate manifest for current directory to detect structure
+    try {
+      const generatedManifest =
+        await SkillsManifestManager.generateManifest(currentSkillsDir);
 
-			// If current is flat and new is categorized, migration recommended
-			if (generatedManifest.structure === "flat" && newManifest.structure === "categorized") {
-				logger.info("Migration detected: flat → categorized structure");
-				const mappings = await generateSkillMappings(currentSkillsDir, oldSkillsDir);
+      // If current is flat and new is categorized, migration recommended
+      if (
+        generatedManifest.structure === "flat" &&
+        newManifest.structure === "categorized"
+      ) {
+        logger.info("Migration detected: flat → categorized structure");
+        const mappings = await generateSkillMappings(
+          currentSkillsDir,
+          oldSkillsDir,
+        );
 
-				return {
-					status: "recommended",
-					oldStructure: generatedManifest.structure,
-					newStructure: newManifest.structure,
-					customizations: [],
-					skillMappings: mappings,
-				};
-			}
-		} catch (error) {
-			logger.warning(
-				`Failed to generate current manifest: ${error instanceof Error ? error.message : "Unknown error"}`,
-			);
-			return null;
-		}
-	}
+        return {
+          status: "recommended",
+          oldStructure: generatedManifest.structure,
+          newStructure: newManifest.structure,
+          customizations: [],
+          skillMappings: mappings,
+        };
+      }
+    } catch (error) {
+      logger.warning(
+        `Failed to generate current manifest: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+      return null;
+    }
+  }
 
-	// Both manifests exist, compare structures
-	if (currentManifest && newManifest) {
-		if (currentManifest.structure === "flat" && newManifest.structure === "categorized") {
-			logger.info("Migration detected: flat → categorized structure (via manifest)");
-			const mappings = await generateSkillMappings(currentSkillsDir, oldSkillsDir);
+  // Both manifests exist, compare structures
+  if (currentManifest && newManifest) {
+    if (
+      currentManifest.structure === "flat" &&
+      newManifest.structure === "categorized"
+    ) {
+      logger.info(
+        "Migration detected: flat → categorized structure (via manifest)",
+      );
+      const mappings = await generateSkillMappings(
+        currentSkillsDir,
+        oldSkillsDir,
+      );
 
-			return {
-				status: "recommended",
-				oldStructure: currentManifest.structure,
-				newStructure: newManifest.structure,
-				customizations: [],
-				skillMappings: mappings,
-			};
-		}
+      return {
+        status: "recommended",
+        oldStructure: currentManifest.structure,
+        newStructure: newManifest.structure,
+        customizations: [],
+        skillMappings: mappings,
+      };
+    }
 
-		// Same structure, no migration needed
-		return {
-			status: "not_needed",
-			oldStructure: currentManifest.structure,
-			newStructure: newManifest.structure,
-			customizations: [],
-			skillMappings: [],
-		};
-	}
+    // Same structure, no migration needed
+    return {
+      status: "not_needed",
+      oldStructure: currentManifest.structure,
+      newStructure: newManifest.structure,
+      customizations: [],
+      skillMappings: [],
+    };
+  }
 
-	return null;
+  return null;
 }

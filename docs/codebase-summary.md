@@ -22,11 +22,13 @@ The codebase underwent a major modularization refactor, reducing 24 large files 
 ## Technology Stack
 
 ### Runtime & Build Tools
+
 - **Bun**: Primary runtime and package manager (>=1.3.2)
 - **TypeScript**: Type-safe development (v5.7.2, strict mode)
 - **Node.js**: Compatible with Node.js LTS environments
 
 ### Core Dependencies
+
 - **@octokit/rest**: GitHub API client for repository interactions
 - **@clack/prompts**: Beautiful interactive CLI prompts
 - **cac**: Command-line argument parser
@@ -40,11 +42,13 @@ The codebase underwent a major modularization refactor, reducing 24 large files 
 - **picocolors**: Terminal colors
 
 ### Development Tools
+
 - **Biome**: Fast linting and formatting
 - **Semantic Release**: Automated versioning and publishing
 - **GitHub Actions**: CI/CD automation with multi-platform binary builds
 
 ### Target Platforms
+
 - **macOS** (arm64, x64)
 - **Linux** (x64)
 - **Windows** (x64)
@@ -290,7 +294,9 @@ claudekit-cli/
 ### Modular Architecture Patterns
 
 #### Facade Pattern
+
 Each domain module exposes a facade file (e.g., `settings-merger.ts`) that:
+
 - Re-exports public API from submodules
 - Provides backward-compatible interface
 - Hides internal implementation details
@@ -303,27 +309,30 @@ export type { MergeResult, MergeOptions } from "./merger/types.js";
 ```
 
 #### Phase Handler Pattern
+
 Complex commands use orchestrator + phase handlers for single responsibility:
 
 ```typescript
 // Example: commands/init/init-command.ts (Orchestrator)
 export async function initCommand(options: InitOptions) {
-  await resolveOptions(options);        // phases/options-resolver.ts
-  await selectKitAndVersion(context);   // phases/selection-handler.ts
-  await downloadRelease(context);       // phases/download-handler.ts
-  await handleMigration(context);       // phases/migration-handler.ts
-  await mergeFiles(context);            // phases/merge-handler.ts
-  await applyTransforms(context);       // phases/transform-handler.ts
-  await runPostInstall(context);        // phases/post-install-handler.ts
+  await resolveOptions(options); // phases/options-resolver.ts
+  await selectKitAndVersion(context); // phases/selection-handler.ts
+  await downloadRelease(context); // phases/download-handler.ts
+  await handleMigration(context); // phases/migration-handler.ts
+  await mergeFiles(context); // phases/merge-handler.ts
+  await applyTransforms(context); // phases/transform-handler.ts
+  await runPostInstall(context); // phases/post-install-handler.ts
 }
 ```
 
 ### 0. Help System (src/domains/help/)
 
 #### help-types.ts - Type Definitions for Custom Help System
+
 Foundation interfaces and types for the custom help renderer.
 
 **Core Interfaces:**
+
 - **CommandHelp**: Complete help data for a single command (name, description, usage, examples, optionGroups, sections, aliases, deprecated)
 - **HelpExample**: Single usage example with command and description (max 2 per command)
 - **OptionGroup**: Logical grouping of related options with title (e.g., "Output Options", "Filter Options")
@@ -332,17 +341,20 @@ Foundation interfaces and types for the custom help renderer.
 - **HelpSection**: Generic help section for additional content (notes, warnings, related commands)
 
 **Rendering Configuration:**
+
 - **ColorTheme**: Color theme interface with banner, command, heading, flag, description, example, warning, error, muted, success
 - **ColorFunction**: Type for color formatting functions (respects NO_COLOR)
 - **HelpOptions**: Renderer config (showBanner, showExamples, maxExamples, interactive, width, theme, noColor)
 - **HelpRenderContext**: Context passed to renderer (command, globalHelp, options)
 
 **Type Utilities:**
+
 - **CommandRegistry**: Record<string, CommandHelp> for all command definitions
 - **HelpFormatter**: Custom formatter function type (help, context) => string
 - **GlobalHelp**: Global help data (name, description, version, usage, commands, globalOptions)
 
 **Design Principles:**
+
 - Conciseness over completeness (max 2 examples per command)
 - Accessibility (NO_COLOR environment variable support)
 - Extensibility (custom formatters, pluggable themes)
@@ -355,7 +367,9 @@ Foundation interfaces and types for the custom help renderer.
 Commands follow the orchestrator + phase handlers pattern for complex operations.
 
 #### init/ - Project Initialization/Update
+
 Modularized into orchestrator + 8 phase handlers:
+
 - `init-command.ts`: Main orchestrator (~100 lines)
 - `phases/options-resolver.ts`: Parse and validate options
 - `phases/selection-handler.ts`: Kit and version selection
@@ -367,14 +381,18 @@ Modularized into orchestrator + 8 phase handlers:
 - `phases/post-install-handler.ts`: Post-install setup
 
 #### new/ - Project Creation
+
 Modularized into orchestrator + 3 phase handlers:
+
 - `new-command.ts`: Main orchestrator
 - `phases/directory-setup.ts`: Directory validation
 - `phases/project-creation.ts`: Project creation
 - `phases/post-setup.ts`: Optional packages, skills deps
 
 #### uninstall/ - ClaudeKit Uninstaller
+
 Modularized into command + handlers:
+
 - `uninstall-command.ts`: Main command
 - `installation-detector.ts`: Detect installations
 - `analysis-handler.ts`: Analyze what to remove
@@ -385,6 +403,7 @@ Modularized into command + handlers:
 Business logic organized by domain with facade pattern.
 
 #### config/ - Configuration Management
+
 ```
 config/
 ├── index.ts
@@ -402,6 +421,7 @@ config/
 ```
 
 #### github/ - GitHub API Integration
+
 ```
 github/
 ├── github-auth.ts
@@ -417,6 +437,7 @@ github/
 ```
 
 #### health-checks/ - Doctor Command System
+
 ```
 health-checks/
 ├── claudekit-checker.ts    # Facade (14 checkers)
@@ -445,6 +466,7 @@ health-checks/
 ```
 
 #### installation/ - Download, Extraction, Merging
+
 ```
 installation/
 ├── download-manager.ts     # Facade
@@ -478,6 +500,7 @@ installation/
 **Multi-Kit Merge Phase 1 Features:**
 
 `selective-merger.ts` (NEW):
+
 - Hybrid size+checksum comparison for efficient copy decisions
 - Multi-kit context awareness (via `setMultiKitContext()`)
 - File comparison reasons: `new`, `size-differ`, `checksum-differ`, `unchanged`, `shared-identical`, `shared-older`
@@ -485,16 +508,19 @@ installation/
 - Returns `CompareResult` with changed status and detailed reason
 
 `copy-executor.ts` (ENHANCED):
+
 - `setMultiKitContext(claudeDir, installingKit)`: Enable cross-kit file checking
 - Tracks shared files and skipped count statistics
 - Prevents overwriting newer versions from other kits
 - Passes multi-kit context to SelectiveMerger for intelligent decisions
 
 `file-merger.ts` (ENHANCED):
+
 - Facade exports `setMultiKitContext()` method
 - Wires multi-kit context through to CopyExecutor
 
 #### skills/ - Skills Management
+
 ```
 skills/
 ├── skills-customization-scanner.ts  # Facade
@@ -516,6 +542,7 @@ skills/
 ```
 
 #### versioning/ - Version Management
+
 ```
 versioning/
 ├── version-checker.ts      # Facade
@@ -537,6 +564,7 @@ versioning/
 Cross-domain services with focused submodules.
 
 #### file-operations/ - File System Operations
+
 ```
 file-operations/
 ├── manifest-writer.ts      # Facade
@@ -550,6 +578,7 @@ file-operations/
 **Manifest Operations (Phase 1):**
 
 `manifest-reader.ts` (NEW):
+
 - `findFileInInstalledKits()`: Locates file in any installed kit's metadata (multi-kit aware)
 - `InstalledFileInfo`: Interface returning file ownership, version, checksum across kits
 - `readKitManifest()`: Read kit-specific metadata from manifest.json
@@ -557,9 +586,11 @@ file-operations/
 - Supports both multi-kit format and legacy format metadata
 
 `manifest-writer.ts` (FACADE):
+
 - Coordinates manifest tracking and updates
 
 #### package-installer/ - Package Installation
+
 ```
 package-installer/
 ├── dependency-installer.ts   # Facade
@@ -577,6 +608,7 @@ package-installer/
 ```
 
 #### transformers/ - Path Transformations
+
 ```
 transformers/
 ├── commands-prefix.ts        # Facade
@@ -596,6 +628,7 @@ transformers/
 ### 4. Shared Layer (src/shared/)
 
 Pure utilities with no domain logic:
+
 - `environment.ts` - Platform detection, concurrency tuning
 - `logger.ts` - Structured logging with token sanitization
 - `output-manager.ts` - Output formatting
@@ -608,6 +641,7 @@ Pure utilities with no domain logic:
 ## Data Flow
 
 ### New Project Flow
+
 1. Parse and validate command options
 2. Authenticate with GitHub (multi-tier fallback)
 3. Select kit (interactive or via flag)
@@ -624,6 +658,7 @@ Pure utilities with no domain logic:
 14. Success message with next steps
 
 ### Update Project Flow
+
 1. Parse and validate options (including --global, --fresh, --beta)
 2. Handle fresh installation if --fresh flag
 3. Set global flag in ConfigManager
@@ -639,6 +674,7 @@ Pure utilities with no domain logic:
 13. Success message
 
 ### Authentication Flow
+
 ```
 GH CLI → Env Vars → Config → Keychain → Prompt User
   ↓         ↓         ↓         ↓           ↓
@@ -648,6 +684,7 @@ Return Token with Method
 ```
 
 ### Skills Migration Flow
+
 ```
 Detection (Manifest or Heuristics)
     ↓
@@ -665,27 +702,32 @@ Success or Rollback on Error
 ## Security Architecture
 
 ### Security Layers
+
 1. **Application Layer**: Token sanitization, input validation (Zod)
 2. **Download Layer**: Path traversal prevention, archive bomb detection
 3. **Extraction Layer**: Exclude pattern enforcement, size limits
 4. **Storage Layer**: OS keychain encryption, protected file preservation
 
 ### Path Traversal Prevention
+
 - Resolve paths to canonical forms
 - Reject relative paths with ".."
 - Verify target starts with base path
 - Maximum extraction size: 500MB
 
 ### Authentication Security
+
 - Tokens never logged or exposed
 - Automatic sanitization in logs
 - Keychain integration for secure storage
-- Token format validation (ghp_*, github_pat_*)
+- Token format validation (ghp*\*, github_pat*\*)
 
 ### Protected Files
+
 Always skipped during updates:
-- .env, .env.local, .env.*.local
-- *.key, *.pem, *.p12
+
+- .env, .env.local, .env.\*.local
+- _.key, _.pem, \*.p12
 - node_modules/**, .git/**
 - dist/**, build/**
 - .gitignore, .repomixignore, .mcp.json, CLAUDE.md
@@ -693,6 +735,7 @@ Always skipped during updates:
 ## Performance Characteristics
 
 ### Optimizations
+
 - Streaming downloads (no memory buffering)
 - Parallel release fetching
 - In-memory token caching
@@ -702,6 +745,7 @@ Always skipped during updates:
 - Version check caching (7-day cache)
 
 ### Resource Limits
+
 - Maximum extraction size: 500MB
 - Request timeout: 30 seconds
 - Progress bar chunk size: 1MB
@@ -710,16 +754,19 @@ Always skipped during updates:
 ## Build & Distribution
 
 ### Binary Compilation
+
 - Bun's --compile flag for standalone binaries
 - Multi-platform builds via GitHub Actions
 - Platform detection wrapper script (bin/ck.js)
 
 ### NPM Distribution
+
 - Published to npm registry
 - Global installation via npm, yarn, pnpm, or bun
 - Semantic versioning with automated releases
 
 ### CI/CD Pipeline
+
 1. Push to main branch
 2. Build binaries (parallel, all platforms)
 3. Run type checking, linting, tests
@@ -731,6 +778,7 @@ Always skipped during updates:
 ## Key Features
 
 ### New in v1.16.0
+
 - **Init command**: Renamed from update (deprecation warning)
 - **Fresh installation**: --fresh flag for clean reinstall
 - **Beta versions**: --beta flag for pre-release visibility
@@ -745,6 +793,7 @@ Always skipped during updates:
 - **Environment detection**: Platform-aware concurrency tuning (macOS: 10, Windows: 15, Linux: 20)
 
 ### Multi-Kit Support (Phase 1 - IN PROGRESS)
+
 - **Selective merge with multi-kit awareness**: Detects and reuses files shared across kits
 - **Smart file comparison**: Hybrid size+checksum comparison for efficient copy decisions
 - **Version-aware merging**: Semver comparison prevents overwriting newer versions from other kits
@@ -754,26 +803,33 @@ Always skipped during updates:
 - **Multi-kit metadata**: Extended metadata format tracks per-kit file ownership and versions
 
 ### Multi-Tier Authentication
+
 Flexible authentication with automatic fallback for seamless UX across environments.
 
 ### Smart File Merging
+
 Intelligent conflict handling and customization preservation during updates.
 
 ### Skills Migration System
+
 Automated migration from flat to categorized structures with zero data loss guarantee.
 
 ### Global Path Resolution
+
 Platform-aware paths with XDG compliance and Windows support.
 
 ### Version Management
+
 Interactive version selection, beta version support, release caching.
 
 ### Dependency Management
+
 Auto-detection and installation of system dependencies (doctor command).
 
 ## Error Handling
 
 ### Error Types
+
 - Structured error classes with status codes
 - User-friendly error messages
 - Stack traces in verbose mode
@@ -781,6 +837,7 @@ Auto-detection and installation of system dependencies (doctor command).
 - Migration-specific errors with rollback
 
 ### Recovery Mechanisms
+
 - Automatic fallback to tarball on asset failure
 - Temporary directory cleanup on errors
 - Safe prompt cancellation
@@ -790,12 +847,14 @@ Auto-detection and installation of system dependencies (doctor command).
 ## Integration Points
 
 ### External Services
+
 - GitHub API: Repository and release management
 - npm Registry: Package distribution
 - OS Keychain: Secure credential storage (macOS, Linux, Windows)
 - Discord Webhooks: Release notifications
 
 ### File System
+
 - Configuration (local): ~/.claudekit/config.json
 - Configuration (global): Platform-specific (XDG-compliant)
 - Cache: ~/.claudekit/cache or platform-specific
@@ -808,6 +867,7 @@ Auto-detection and installation of system dependencies (doctor command).
 ## Development Workflow
 
 ### Local Development
+
 ```bash
 bun install              # Install dependencies
 bun run dev              # Run in development mode
@@ -818,6 +878,7 @@ bun run format           # Format code
 ```
 
 ### Binary Compilation
+
 ```bash
 bun run compile          # Compile standalone binary
 bun run compile:binary   # Compile to bin/ck
@@ -827,6 +888,7 @@ bun run build:platform-binaries  # Build all platforms
 ## Testing Strategy
 
 ### Test Coverage
+
 - Unit tests for all core libraries
 - Command integration tests
 - Authentication flow tests
@@ -835,6 +897,7 @@ bun run build:platform-binaries  # Build all platforms
 - Doctor command tests (50 tests, 324 assertions)
 
 ### Test Files Structure
+
 - Mirrors source structure (tests/ matches src/)
 - Uses Bun's built-in test runner
 - Setup/teardown for filesystem operations
@@ -843,12 +906,14 @@ bun run build:platform-binaries  # Build all platforms
 ## Future Considerations
 
 ### Planned Improvements
+
 - Marketing kit support (infrastructure ready)
 - Enhanced progress reporting
 - Diff preview before merging
 - Plugin system
 
 ### Extensibility
+
 - Modular command structure
 - Pluggable authentication providers
 - Customizable protected patterns

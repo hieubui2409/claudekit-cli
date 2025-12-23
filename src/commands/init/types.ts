@@ -4,39 +4,40 @@
 
 import type { PromptsManager } from "@/domains/ui/prompts.js";
 import type {
-	FoldersConfig,
-	GitHubRelease,
-	KitConfig,
-	KitType,
-	TrackedFile,
-	UpdateCommandOptions,
+  FoldersConfig,
+  GitHubRelease,
+  KitConfig,
+  KitType,
+  TrackedFile,
+  UpdateCommandOptions,
 } from "@/types";
 
 /**
  * Validated options after Zod parsing
  */
 export interface ValidatedOptions {
-	kit?: string;
-	dir: string;
-	release?: string;
-	beta: boolean;
-	global: boolean;
-	yes: boolean;
-	fresh: boolean;
-	refresh: boolean;
-	exclude: string[];
-	only: string[];
-	docsDir?: string;
-	plansDir?: string;
-	installSkills: boolean;
-	withSudo: boolean;
-	skipSetup: boolean;
-	forceOverwrite: boolean;
-	forceOverwriteSettings: boolean;
-	dryRun: boolean;
-	prefix: boolean;
-	sync: boolean;
-	useGit: boolean;
+  kit?: string;
+  dir: string;
+  release?: string;
+  folder?: string;
+  beta: boolean;
+  global: boolean;
+  yes: boolean;
+  fresh: boolean;
+  refresh: boolean;
+  exclude: string[];
+  only: string[];
+  docsDir?: string;
+  plansDir?: string;
+  installSkills: boolean;
+  withSudo: boolean;
+  skipSetup: boolean;
+  forceOverwrite: boolean;
+  forceOverwriteSettings: boolean;
+  dryRun: boolean;
+  prefix: boolean;
+  sync: boolean;
+  useGit: boolean;
 }
 
 /**
@@ -44,68 +45,71 @@ export interface ValidatedOptions {
  * Each phase receives and returns this context
  */
 export interface InitContext {
-	/** Raw CLI options */
-	rawOptions: UpdateCommandOptions;
+  /** Raw CLI options */
+  rawOptions: UpdateCommandOptions;
 
-	/** Validated options after schema parsing */
-	options: ValidatedOptions;
+  /** Validated options after schema parsing */
+  options: ValidatedOptions;
 
-	/** Prompts manager for UI interactions */
-	prompts: PromptsManager;
+  /** Prompts manager for UI interactions */
+  prompts: PromptsManager;
 
-	/** Whether explicit --dir flag was provided */
-	explicitDir: boolean;
+  /** Whether explicit --dir flag was provided */
+  explicitDir: boolean;
 
-	/** Non-interactive mode detection */
-	isNonInteractive: boolean;
+  /** Non-interactive mode detection */
+  isNonInteractive: boolean;
 
-	/** Selected kit configuration */
-	kit?: KitConfig;
+  /** Local folder mode (--folder flag) */
+  isLocalFolder: boolean;
 
-	/** Kit type key (e.g., "engineer") */
-	kitType?: KitType;
+  /** Selected kit configuration */
+  kit?: KitConfig;
 
-	/** Resolved target directory (absolute path) */
-	resolvedDir?: string;
+  /** Kit type key (e.g., "engineer") */
+  kitType?: KitType;
 
-	/** Selected GitHub release */
-	release?: GitHubRelease;
+  /** Resolved target directory (absolute path) */
+  resolvedDir?: string;
 
-	/** Selected version tag */
-	selectedVersion?: string;
+  /** Selected GitHub release */
+  release?: GitHubRelease;
 
-	/** Temporary directory for download */
-	tempDir?: string;
+  /** Selected version tag */
+  selectedVersion?: string;
 
-	/** Path to downloaded archive */
-	archivePath?: string;
+  /** Temporary directory for download */
+  tempDir?: string;
 
-	/** Extraction directory */
-	extractDir?: string;
+  /** Path to downloaded archive */
+  archivePath?: string;
 
-	/** Claude directory path (.claude or global kit dir) */
-	claudeDir?: string;
+  /** Extraction directory */
+  extractDir?: string;
 
-	/** Folders configuration (docs/plans dirs) */
-	foldersConfig?: FoldersConfig;
+  /** Claude directory path (.claude or global kit dir) */
+  claudeDir?: string;
 
-	/** Custom .claude files to preserve */
-	customClaudeFiles: string[];
+  /** Folders configuration (docs/plans dirs) */
+  foldersConfig?: FoldersConfig;
 
-	/** Include patterns for selective update */
-	includePatterns: string[];
+  /** Custom .claude files to preserve */
+  customClaudeFiles: string[];
 
-	/** Whether to install skills */
-	installSkills: boolean;
+  /** Include patterns for selective update */
+  includePatterns: string[];
 
-	/** Whether cancelled by user */
-	cancelled: boolean;
+  /** Whether to install skills */
+  installSkills: boolean;
 
-	/** Additional kits to install after current one (multi-kit mode) */
-	pendingKits?: KitType[];
+  /** Whether cancelled by user */
+  cancelled: boolean;
 
-	/** All kits accessible to the user (from access check) */
-	accessibleKits?: KitType[];
+  /** Additional kits to install after current one (multi-kit mode) */
+  pendingKits?: KitType[];
+
+  /** All kits accessible to the user (from access check) */
+  accessibleKits?: KitType[];
 }
 
 /**
@@ -113,14 +117,14 @@ export interface InitContext {
  * Uses discriminated union pattern with literal type for type safety
  */
 export interface SyncContext extends InitContext {
-	/** Discriminator - always true when sync is in progress */
-	syncInProgress: true;
-	/** Files tracked in metadata for sync */
-	syncTrackedFiles: TrackedFile[];
-	/** Current installed version */
-	syncCurrentVersion: string;
-	/** Latest available version */
-	syncLatestVersion: string;
+  /** Discriminator - always true when sync is in progress */
+  syncInProgress: true;
+  /** Files tracked in metadata for sync */
+  syncTrackedFiles: TrackedFile[];
+  /** Current installed version */
+  syncCurrentVersion: string;
+  /** Latest available version */
+  syncLatestVersion: string;
 }
 
 /**
@@ -128,12 +132,12 @@ export interface SyncContext extends InitContext {
  * Uses discriminated union pattern for proper TypeScript narrowing
  */
 export function isSyncContext(ctx: InitContext): ctx is SyncContext {
-	return (
-		"syncInProgress" in ctx &&
-		ctx.syncInProgress === true &&
-		"syncTrackedFiles" in ctx &&
-		Array.isArray(ctx.syncTrackedFiles)
-	);
+  return (
+    "syncInProgress" in ctx &&
+    ctx.syncInProgress === true &&
+    "syncTrackedFiles" in ctx &&
+    Array.isArray(ctx.syncTrackedFiles)
+  );
 }
 
 /**

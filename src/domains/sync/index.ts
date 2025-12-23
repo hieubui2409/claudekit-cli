@@ -4,11 +4,11 @@
 
 // Types
 export type {
-	ConfigUpdateCache,
-	FileHunk,
-	MergeResult,
-	SyncPlan,
-	UpdateCheckResult,
+  ConfigUpdateCache,
+  FileHunk,
+  MergeResult,
+  SyncPlan,
+  UpdateCheckResult,
 } from "./types.js";
 
 // Version checking
