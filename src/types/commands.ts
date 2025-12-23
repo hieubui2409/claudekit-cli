@@ -49,6 +49,7 @@ export const NewCommandOptionsSchema = z
 		opencode: z.boolean().default(false),
 		gemini: z.boolean().default(false),
 		installSkills: z.boolean().default(false),
+		withSudo: z.boolean().default(false), // Include system packages requiring sudo (Linux)
 		prefix: z.boolean().default(false),
 		beta: z.boolean().default(false),
 		dryRun: z.boolean().default(false), // Preview changes without applying
@@ -71,6 +72,7 @@ export const UpdateCommandOptionsSchema = z
 		global: z.boolean().default(false),
 		fresh: z.boolean().default(false),
 		installSkills: z.boolean().default(false),
+		withSudo: z.boolean().default(false), // Include system packages requiring sudo (Linux)
 		prefix: z.boolean().default(false),
 		beta: z.boolean().default(false),
 		dryRun: z.boolean().default(false), // Preview changes without applying
