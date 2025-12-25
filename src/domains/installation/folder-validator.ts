@@ -21,7 +21,6 @@ export class FolderValidator {
    * 1. Path must exist and be a directory
    * 2. Must contain .claude directory
    * 3. Must contain metadata.json
-   * 4. Must contain .release-manifest.json (for ownership tracking)
    */
   static async validate(folderPath: string): Promise<FolderValidationResult> {
     // 1. Resolve to absolute path
@@ -79,19 +78,7 @@ export class FolderValidator {
       };
     }
 
-    // 7. Check for release manifest (required for ownership tracking)
-    const manifestPath = join(resolvedPath, ".release-manifest.json");
-    const hasManifest = await pathExists(manifestPath);
-
-    if (!hasManifest) {
-      return {
-        valid: false,
-        resolvedPath,
-        error: `Invalid ClaudeKit folder: missing .release-manifest.json at ${resolvedPath}. This file is required for file ownership tracking.`,
-      };
-    }
-
-    // 8. Extract version from metadata.json if available
+    // 7. Extract version from metadata.json if available
     let version: string | undefined;
     try {
       const metadataContent = await readFile(metadataPath, "utf-8");
@@ -103,6 +90,10 @@ export class FolderValidator {
       );
       version = "local";
     }
+
+    // 8. Check for release manifest (optional - for ownership tracking)
+    const manifestPath = join(resolvedPath, ".release-manifest.json");
+    const hasManifest = await pathExists(manifestPath);
 
     logger.verbose("Folder validation", {
       path: resolvedPath,
