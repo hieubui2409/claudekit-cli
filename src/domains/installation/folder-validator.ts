@@ -91,15 +91,10 @@ export class FolderValidator {
       version = "local";
     }
 
-    // 8. Check for release manifest (optional - for ownership tracking)
-    const manifestPath = join(resolvedPath, ".release-manifest.json");
-    const hasManifest = await pathExists(manifestPath);
-
     logger.verbose("Folder validation", {
       path: resolvedPath,
       hasClaudeDir,
       hasMetadata,
-      hasManifest,
       version,
     });
 
